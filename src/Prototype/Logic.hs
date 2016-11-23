@@ -16,6 +16,7 @@ module Prototype.Logic (
     isFixPoint,
     iriToBase,
     computeFixpoint,
+    getBranchToP0,
     IRI(..),
     Property(..),
     Bases(..),
@@ -50,9 +51,20 @@ data KnowledgeBase = KB (Map IRI PrototypeExpression)
 iriToBase :: IRI -> Bases
 iriToBase = Base
 
+baseToIri :: Bases -> Maybe IRI
+baseToIri P0 = Nothing
+baseToIri (Base iri) = Just iri
+
 isFixPoint :: PrototypeExpression -> Bool
 isFixPoint Proto {base=P0, add=_, remove = []} = True
 isFixPoint _ = False
 
 computeFixpoint :: KnowledgeBase -> IRI -> PrototypeExpression
 computeFixpoint _ _ = Proto {base=P0, add=Empty, remove=Empty}
+
+getBranchToP0 :: KnowledgeBase -> PrototypeExpression -> [PrototypeExpression]
+getBranchToP0 kb@(KB kbMap) proto@Proto{base=parent, add=_, remove=_} =
+  let parentMaybeIri = baseToIri parent
+  in case parentMaybeIri of
+    Just parentIri -> proto : getBranchToP0 kb (kbMap ! parentIri)
+    Nothing -> [proto]
