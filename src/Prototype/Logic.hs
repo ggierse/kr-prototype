@@ -55,12 +55,20 @@ baseToIri :: Bases -> Maybe IRI
 baseToIri P0 = Nothing
 baseToIri (Base iri) = Just iri
 
+--protoexpToPrototype :: PrototypeExpression -> IRI -> Prototype
+--protoexpToPrototype Proto{base=P0, add=Change property valueList, remove=r1} iri =
+--  PT{iri=iri, properties=[]}
+
 isFixPoint :: PrototypeExpression -> Bool
 isFixPoint Proto {base=P0, add=_, remove = []} = True
 isFixPoint _ = False
 
 computeFixpoint :: KnowledgeBase -> IRI -> PrototypeExpression
-computeFixpoint _ _ = Proto {base=P0, add=Empty, remove=Empty}
+computeFixpoint kb@(KB kbMap) iri =
+  let original = kbMap ! iri
+      branch = getBranchToP0 kb original
+  in original
+-- TODO finish this
 
 getBranchToP0 :: KnowledgeBase -> PrototypeExpression -> [PrototypeExpression]
 getBranchToP0 kb@(KB kbMap) proto@Proto{base=parent, add=_, remove=_} =
@@ -68,3 +76,11 @@ getBranchToP0 kb@(KB kbMap) proto@Proto{base=parent, add=_, remove=_} =
   in case parentMaybeIri of
     Just parentIri -> proto : getBranchToP0 kb (kbMap ! parentIri)
     Nothing -> [proto]
+
+-- computeFixpointFromBranch :: [PrototypeExpression] -> PrototypeExpression
+--computeFixpointFromBranch list =
+--  foldr f list
+
+--applyPrototypeChainOnce :: PrototypeExpression -> PrototypeExpression -> PrototypeExpression
+--applyPrototypeChainOnce Proto{base=b1, add=a1, remove=r1} Proto{base=P0, add=a2, remove=r2} =
+--  Proto{base=P0, }
