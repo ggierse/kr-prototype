@@ -7,17 +7,14 @@ import Data.Map.Strict as Map
 test :: IRI
 test = ID "test:test"
 
-foo :: IRI
-foo = ID "test:foo"
-
 hasName :: Property
 hasName = Prop (ID "test:hasName")
 
-name :: IRI
-name = ID "test:myName"
+myName :: IRI
+myName = ID "test:myName"
 
 exampleChange :: SimpleChangeExpression
-exampleChange = Change hasName [name]
+exampleChange = Change hasName [myName]
 
 fixpointProto :: PrototypeExpression
 fixpointProto = Proto {base = P0, add = [], remove = []}
@@ -41,6 +38,8 @@ changeWheelsToFour :: SimpleChangeExpression
 changeWheelsToFour = Change numWheels [ID "4"]
 changeWheelsToTwo :: SimpleChangeExpression
 changeWheelsToTwo = Change numWheels[ID "2"]
+changeWheelsToNull :: SimpleChangeExpression
+changeWheelsToNull = Change numWheels[ID "2", ID "4"]
 
 vehicleProto :: PrototypeExpression
 vehicleProto = Proto {base=P0, add=[changeWheelsToFour], remove=[]}
@@ -53,7 +52,12 @@ bikeFixpoint :: PrototypeExpression
 bikeFixpoint = Proto {base=P0, add=[changeWheelsToTwo], remove=[]}
 
 testKB :: KnowledgeBase
-testKB = KB (fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)])
+testKB = fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
+
+mapTwo :: Map Property [IRI]
+mapTwo = fromList [(numWheels, [ID "4", ID "2"])]
+mapOne :: Map Property [IRI]
+mapOne = fromList [(numWheels, [ID "4"])]
 
 spec :: Spec
 spec = do
@@ -73,6 +77,16 @@ spec = do
         length (getBranchToP0 testKB carProto) `shouldBe` 3
       it "branch order is correct for two steps" $
         getBranchToP0 testKB carProto `shouldBe` [carProto, bikeProto, vehicleProto]
+
+    describe "removeProperty" $ do
+      it "remove one of two" $
+        removeProperty mapTwo changeWheelsToTwo `shouldBe` mapOne
+      it "remove all" $
+        removeProperty mapTwo changeWheelsToNull `shouldBe` empty
+
+    describe "branchToPrototype" $ do
+      it "branch with one item" $
+        branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=(fromList[(numWheels, [ID "4"])])}
 
     describe "computeFixpoint" $ do
         it "reduce to P0" $
