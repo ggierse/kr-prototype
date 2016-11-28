@@ -91,7 +91,7 @@ applyPrototypeExpression (PT _ _) Proto{} = PT{name=ID "", properties=empty}
     --addProperty (removeProperty plist rem1) add1
 
 removeProperties :: PropertyMap -> [SimpleChangeExpression] -> PropertyMap
-removeProperties _ _ = empty
+removeProperties = List.foldl removeProperty
 
 removeProperty :: PropertyMap -> SimpleChangeExpression -> PropertyMap
 removeProperty propMap change =

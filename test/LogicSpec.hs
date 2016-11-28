@@ -14,6 +14,7 @@ myName = ID "test:myName"
 
 changeNameMyName :: SimpleChangeExpression
 changeNameMyName = Change hasName [myName]
+changeNameTest :: SimpleChangeExpression
 changeNameTest = Change hasName [test]
 
 fixpointProto :: PrototypeExpression
@@ -59,8 +60,10 @@ mapTwo = fromList [(numWheels, [ID "4", ID "2"])]
 mapOne :: Map Property [IRI]
 mapOne = fromList [(numWheels, [ID "4"])]
 
+mapTwoProperties :: Map Property [IRI]
 mapTwoProperties = fromList [(numWheels, [ID "4", ID "2"]), (hasName, [myName, test])]
-mapTwoPropertiesResult = fromList [(numWheels, [ID "4"]), (hasName, [myName])]
+mapTwoPropertiesResult :: Map Property [IRI]
+mapTwoPropertiesResult = fromList [(numWheels, [ID "4"]), (hasName, [test])]
 
 spec :: Spec
 spec = do
