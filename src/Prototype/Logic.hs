@@ -12,24 +12,7 @@
 --
 -----------------------------------------------------------------------------
 
-module Prototype.Logic (
-    isFixPoint,
-    iriToBase,
-    computeFixpoint,
-    branchToPrototype,
-    getBranchToP0,
-    removeProperty,
-    removeProperties,
-    applyPrototypeExpression,
-    IRI(..),
-    Property(..),
-    PropertyMap,
-    Bases(..),
-    SimpleChangeExpression(..),
-    PrototypeExpression(..),
-    Prototype(..),
-    KnowledgeBase,
-) where
+module Prototype.Logic where
 
 import Data.Map.Strict as Map
 import Data.List as List
@@ -100,21 +83,21 @@ removeProperty propMap change =
   --mapWithKey (\k v -> removeIrisIfPropertyEqual (k,v) (prop, iris) ) propMap
 
 removeIfPropertyExists :: Map Property [IRI] -> SimpleChangeExpression -> Map Property [IRI]
-removeIfPropertyExists propMap (Change props iris) =
-  mapWithKey (\k v -> removeIrisIfPropertyEqual (k,v) (props, iris) ) propMap
+removeIfPropertyExists propMap (Change prop iris) =
+  mapWithKey (\k v -> removeIrisIfPropertyEqual (k,v) (prop, iris) ) propMap
 
 removeIrisIfPropertyEqual :: (Property, [IRI]) -> (Property, [IRI]) -> [IRI]
 removeIrisIfPropertyEqual (pBase, irisBase) (pRemove,irisRemove)
   | pBase == pRemove = irisBase List.\\ irisRemove
   | otherwise = irisBase
 
+addProperty :: PropertyMap -> SimpleChangeExpression -> PropertyMap
+addProperty propMap (Change prop iris) =
+  let maybeIris = Map.lookup prop propMap in
+    case maybeIris of
+      Just oldIris ->  Map.insert prop (oldIris ++ iris) propMap
+      Nothing -> Map.insert prop iris propMap
 
-{-- addProperty :: PropertyMap -> SimpleChangeExpression -> PropertyMap
-addProperty PList mapping Change prop iris =
-  addIrisIfPropertyEqual
---}
-  -- wenn die property übereinstimmt muss es zu der iri liste hinzugefügt werden
-  -- sonst neuer eintrag
 
 
 

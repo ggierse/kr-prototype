@@ -39,8 +39,10 @@ changeWheelsToFour :: SimpleChangeExpression
 changeWheelsToFour = Change numWheels [ID "4"]
 changeWheelsToTwo :: SimpleChangeExpression
 changeWheelsToTwo = Change numWheels[ID "2"]
-changeWheelsToNull :: SimpleChangeExpression
-changeWheelsToNull = Change numWheels[ID "2", ID "4"]
+changeWheelsTwoFour :: SimpleChangeExpression
+changeWheelsTwoFour = Change numWheels[ID "2", ID "4"]
+changeWheelsFourTwo :: SimpleChangeExpression
+changeWheelsFourTwo = Change numWheels[ID "4", ID "2"]
 
 vehicleProto :: PrototypeExpression
 vehicleProto = Proto {base=P0, add=[changeWheelsToFour], remove=[]}
@@ -88,14 +90,20 @@ spec = do
       it "remove one iri of two" $
         removeProperty mapTwo changeWheelsToTwo `shouldBe` mapOne
       it "remove all iris" $
-        removeProperty mapTwo changeWheelsToNull `shouldBe` empty
+        removeProperty mapTwo changeWheelsTwoFour `shouldBe` empty
 
     describe "removeProperties" $ do
       it "remove one iri from two differen properties" $
         removeProperties mapTwoProperties [changeWheelsToTwo, changeNameMyName] `shouldBe` mapTwoPropertiesResult
       it "remove two properties completely" $
-        removeProperties mapTwoProperties [changeWheelsToNull, changeNameMyName, changeNameTest]
+        removeProperties mapTwoProperties [changeWheelsTwoFour, changeNameMyName, changeNameTest]
         `shouldBe` empty
+
+    describe "addProperty" $ do
+      it "add one iri to PropertyMap" $
+        addProperty mapOne changeWheelsToTwo `shouldBe` mapTwo
+      it "add multiple iris to empty PropertyMap" $
+        addProperty empty changeWheelsFourTwo `shouldBe` mapTwo
 
     describe "branchToPrototype" $ do
       it "branch with one item" $
