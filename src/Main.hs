@@ -16,10 +16,6 @@ module Main (
     main
 ) where
 
-import Data.Array.Unboxed
-import Data.Bits
-import Data.Char
-import Data.Word
 
 -- This strang looking comment adds code only needed when running the
 -- doctest tests embedded in the comments
