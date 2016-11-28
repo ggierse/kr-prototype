@@ -112,6 +112,9 @@ spec = do
       it "add multiple iris to empty PropertyMap" $
         addProperty empty changeWheelsTwoFour `shouldBe` mapTwo
 
+    describe "addProperties" $
+      it "add one iri to two different properties each" $
+        addProperties mapTwoPropertiesOneEach [changeWheelsToTwo, changeNameMyName] `shouldBe` mapTwoProperties
 
     describe "branchToPrototype" $ do
       it "branch with one item" $

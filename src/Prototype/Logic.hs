@@ -98,14 +98,15 @@ removeIrisIfPropertyEqual (pBase, irisBase) (pRemove,irisRemove)
   | pBase == pRemove = irisBase Set.\\ irisRemove
   | otherwise = irisBase
 
+addProperties :: PropertyMap -> [SimpleChangeExpression] -> PropertyMap
+addProperties = List.foldl addProperty
+
 addProperty :: PropertyMap -> SimpleChangeExpression -> PropertyMap
 addProperty propMap (Change prop iris) =
   let maybeIris = Map.lookup prop propMap in
     case maybeIris of
       Just oldIris ->  Map.insert prop (Set.union oldIris iris) propMap
       Nothing -> Map.insert prop iris propMap
-
-
 
 
 getBranchToP0 :: KnowledgeBase -> PrototypeExpression -> [PrototypeExpression]
