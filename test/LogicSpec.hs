@@ -9,21 +9,21 @@ test = ID "test:test"
 
 hasName :: Property
 hasName = Prop (ID "test:hasName")
-
 myName :: IRI
 myName = ID "test:myName"
 
-exampleChange :: SimpleChangeExpression
-exampleChange = Change hasName [myName]
+changeNameMyName :: SimpleChangeExpression
+changeNameMyName = Change hasName [myName]
+changeNameTest = Change hasName [test]
 
 fixpointProto :: PrototypeExpression
 fixpointProto = Proto {base = P0, add = [], remove = []}
 
 protoUnfixed :: PrototypeExpression
-protoUnfixed = Proto {base=P0, add = [], remove = [exampleChange]}
+protoUnfixed = Proto {base=P0, add = [], remove = [changeNameMyName]}
 
 protoUnfixed2 :: PrototypeExpression
-protoUnfixed2 = Proto {base = iriToBase test, add=[exampleChange], remove = []}
+protoUnfixed2 = Proto {base = iriToBase test, add=[changeNameMyName], remove = []}
 
 vehicle :: IRI
 vehicle = ID "test:vehicle"
@@ -59,6 +59,9 @@ mapTwo = fromList [(numWheels, [ID "4", ID "2"])]
 mapOne :: Map Property [IRI]
 mapOne = fromList [(numWheels, [ID "4"])]
 
+mapTwoProperties = fromList [(numWheels, [ID "4", ID "2"]), (hasName, [myName, test])]
+mapTwoPropertiesResult = fromList [(numWheels, [ID "4"]), (hasName, [myName])]
+
 spec :: Spec
 spec = do
     describe "isFixpoint" $ do
@@ -79,14 +82,21 @@ spec = do
         getBranchToP0 testKB carProto `shouldBe` [carProto, bikeProto, vehicleProto]
 
     describe "removeProperty" $ do
-      it "remove one of two" $
+      it "remove one iri of two" $
         removeProperty mapTwo changeWheelsToTwo `shouldBe` mapOne
-      it "remove all" $
+      it "remove all iris" $
         removeProperty mapTwo changeWheelsToNull `shouldBe` empty
+
+    describe "removeProperties" $ do
+      it "remove one iri from two differen properties" $
+        removeProperties mapTwoProperties [changeWheelsToTwo, changeNameMyName] `shouldBe` mapTwoPropertiesResult
+      it "remove two properties completely" $
+        removeProperties mapTwoProperties [changeWheelsToNull, changeNameMyName, changeNameTest]
+        `shouldBe` empty
 
     describe "branchToPrototype" $ do
       it "branch with one item" $
-        branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=(fromList[(numWheels, [ID "4"])])}
+        branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=fromList[(numWheels, [ID "4"])]}
 
     describe "computeFixpoint" $ do
         it "reduce to P0" $

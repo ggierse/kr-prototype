@@ -19,6 +19,7 @@ module Prototype.Logic (
     branchToPrototype,
     getBranchToP0,
     removeProperty,
+    removeProperties,
     applyPrototypeExpression,
     IRI(..),
     Property(..),
@@ -88,6 +89,9 @@ applyPrototypeExpression
     PT{name=iri, properties=removeProperty plist rem1}
 applyPrototypeExpression (PT _ _) Proto{} = PT{name=ID "", properties=empty}
     --addProperty (removeProperty plist rem1) add1
+
+removeProperties :: PropertyMap -> [SimpleChangeExpression] -> PropertyMap
+removeProperties _ _ = empty
 
 removeProperty :: PropertyMap -> SimpleChangeExpression -> PropertyMap
 removeProperty propMap change =
