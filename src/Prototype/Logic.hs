@@ -16,15 +16,21 @@ module Prototype.Logic where
 
 import Data.Map.Strict as Map
 import Data.List as List
+import qualified Data.Set as Set
+
+type Set = Set.Set
 
 data IRI = ID String deriving (Show, Eq, Ord)
 data Property = Prop IRI deriving (Show, Eq, Ord)
-type PropertyMap = Map Property [IRI]
+type PropertyMap = Map Property (Set.Set IRI)
 data Bases = Base IRI | P0 deriving (Show, Eq)
 
-data SimpleChangeExpression = Change Property [IRI] deriving (Show, Eq)
+data SimpleChangeExpression = Change Property (Set.Set IRI) deriving (Show, Eq, Ord)
 
-data PrototypeExpression = Proto {base :: Bases, add :: [SimpleChangeExpression], remove :: [SimpleChangeExpression]} deriving (Show, Eq)
+data PrototypeExpression = Proto {
+  base :: Bases,
+  add :: Set.Set SimpleChangeExpression,
+  remove :: Set.Set SimpleChangeExpression} deriving (Show, Eq)
 
 data Prototype = PT {name :: IRI, properties :: PropertyMap} deriving (Show, Eq)
 
@@ -50,7 +56,9 @@ baseToIri (Base iri) = Just iri
 --  PT{iri=iri, properties=[]}
 
 isFixPoint :: PrototypeExpression -> Bool
-isFixPoint Proto {base=P0, add=_, remove = []} = True
+isFixPoint Proto {base=P0, add=_, remove = rem1}
+  | Set.null rem1 = True
+  | otherwise = False
 isFixPoint _ = False
 
 computeFixpoint :: KnowledgeBase -> IRI -> PrototypeExpression
@@ -68,34 +76,33 @@ branchToPrototype iri (_head : _tail) = PT{name=iri, properties=empty}
 -- TODO more than one simple change expression
 applyPrototypeExpression :: Prototype -> PrototypeExpression -> Prototype
 applyPrototypeExpression
-  PT{name=iri, properties=plist} Proto{base=_, add=_add1, remove=[rem1]} =
-    PT{name=iri, properties=removeProperty plist rem1}
-applyPrototypeExpression (PT _ _) Proto{} = PT{name=ID "", properties=empty}
+  PT{name=iri, properties=plist} Proto{base=_, add=_add1, remove=rem1} =
+    PT{name=iri, properties=removeProperties plist rem1}
     --addProperty (removeProperty plist rem1) add1
 
-removeProperties :: PropertyMap -> [SimpleChangeExpression] -> PropertyMap
-removeProperties = List.foldl removeProperty
+removeProperties :: PropertyMap -> Set.Set SimpleChangeExpression -> PropertyMap
+removeProperties = Set.foldl removeProperty
 
 removeProperty :: PropertyMap -> SimpleChangeExpression -> PropertyMap
 removeProperty propMap change =
   --filterWithKey (\prop _ -> prop /= properties)
-  Map.filter (not . List.null) (removeIfPropertyExists propMap change)
+  Map.filter (not . Set.null) (removeIfPropertyExists propMap change)
   --mapWithKey (\k v -> removeIrisIfPropertyEqual (k,v) (prop, iris) ) propMap
 
-removeIfPropertyExists :: Map Property [IRI] -> SimpleChangeExpression -> Map Property [IRI]
+removeIfPropertyExists :: PropertyMap -> SimpleChangeExpression -> PropertyMap
 removeIfPropertyExists propMap (Change prop iris) =
   mapWithKey (\k v -> removeIrisIfPropertyEqual (k,v) (prop, iris) ) propMap
 
-removeIrisIfPropertyEqual :: (Property, [IRI]) -> (Property, [IRI]) -> [IRI]
+removeIrisIfPropertyEqual :: (Property, Set.Set IRI) -> (Property, Set.Set IRI) -> Set.Set IRI
 removeIrisIfPropertyEqual (pBase, irisBase) (pRemove,irisRemove)
-  | pBase == pRemove = irisBase List.\\ irisRemove
+  | pBase == pRemove = irisBase Set.\\ irisRemove
   | otherwise = irisBase
 
 addProperty :: PropertyMap -> SimpleChangeExpression -> PropertyMap
 addProperty propMap (Change prop iris) =
   let maybeIris = Map.lookup prop propMap in
     case maybeIris of
-      Just oldIris ->  Map.insert prop (oldIris ++ iris) propMap
+      Just oldIris ->  Map.insert prop (Set.union oldIris iris) propMap
       Nothing -> Map.insert prop iris propMap
 
 

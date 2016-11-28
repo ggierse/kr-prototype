@@ -3,6 +3,7 @@ import Prototype.Logic
 import Test.Hspec
 
 import Data.Map.Strict as Map
+import qualified Data.Set as Set
 
 test :: IRI
 test = ID "test:test"
@@ -13,18 +14,18 @@ myName :: IRI
 myName = ID "test:myName"
 
 changeNameMyName :: SimpleChangeExpression
-changeNameMyName = Change hasName [myName]
+changeNameMyName = Change hasName (Set.fromList [myName])
 changeNameTest :: SimpleChangeExpression
-changeNameTest = Change hasName [test]
+changeNameTest = Change hasName (Set.fromList [test])
 
 fixpointProto :: PrototypeExpression
-fixpointProto = Proto {base = P0, add = [], remove = []}
+fixpointProto = Proto {base = P0, add = Set.empty, remove = Set.empty}
 
 protoUnfixed :: PrototypeExpression
-protoUnfixed = Proto {base=P0, add = [], remove = [changeNameMyName]}
+protoUnfixed = Proto {base=P0, add = Set.empty, remove = Set.fromList [changeNameMyName]}
 
 protoUnfixed2 :: PrototypeExpression
-protoUnfixed2 = Proto {base = iriToBase test, add=[changeNameMyName], remove = []}
+protoUnfixed2 = Proto {base = iriToBase test, add=Set.fromList [changeNameMyName], remove = Set.empty}
 
 vehicle :: IRI
 vehicle = ID "test:vehicle"
@@ -35,37 +36,43 @@ car = ID "test:car"
 
 numWheels :: Property
 numWheels = Prop (ID "test:numWheels")
+twoSet :: Set.Set IRI
+twoSet = Set.fromList [ID "2"]
+fourSet :: Set.Set IRI
+fourSet = Set.fromList [ID "4"]
+twoFourSet :: Set.Set IRI
+twoFourSet = Set.fromList [ID "2", ID "4"]
+
 changeWheelsToFour :: SimpleChangeExpression
-changeWheelsToFour = Change numWheels [ID "4"]
+changeWheelsToFour = Change numWheels fourSet
 changeWheelsToTwo :: SimpleChangeExpression
-changeWheelsToTwo = Change numWheels[ID "2"]
+changeWheelsToTwo = Change numWheels twoSet
 changeWheelsTwoFour :: SimpleChangeExpression
-changeWheelsTwoFour = Change numWheels[ID "2", ID "4"]
-changeWheelsFourTwo :: SimpleChangeExpression
-changeWheelsFourTwo = Change numWheels[ID "4", ID "2"]
+changeWheelsTwoFour = Change numWheels twoFourSet
 
 vehicleProto :: PrototypeExpression
-vehicleProto = Proto {base=P0, add=[changeWheelsToFour], remove=[]}
+vehicleProto = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty}
 bikeProto :: PrototypeExpression
-bikeProto = Proto {base=iriToBase vehicle, add=[changeWheelsToTwo], remove = [changeWheelsToFour]}
+bikeProto = Proto {base=iriToBase vehicle, add=Set.fromList [changeWheelsToTwo], remove = Set.fromList [changeWheelsToFour]}
 carProto :: PrototypeExpression
-carProto = Proto {base=iriToBase bike, add=[changeWheelsToFour], remove=[changeWheelsToTwo]}
+carProto = Proto {base=iriToBase bike, add=Set.fromList [changeWheelsToFour], remove=Set.fromList [changeWheelsToTwo]}
 
 bikeFixpoint :: PrototypeExpression
-bikeFixpoint = Proto {base=P0, add=[changeWheelsToTwo], remove=[]}
+bikeFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToTwo], remove=Set.empty}
 
 testKB :: KnowledgeBase
 testKB = fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
 
-mapTwo :: Map Property [IRI]
-mapTwo = fromList [(numWheels, [ID "4", ID "2"])]
-mapOne :: Map Property [IRI]
-mapOne = fromList [(numWheels, [ID "4"])]
+mapTwo :: Map Property (Set.Set IRI)
+mapTwo = fromList [(numWheels, Set.fromList [ID "4", ID "2"])]
+mapOne :: Map Property (Set.Set IRI)
+mapOne = fromList [(numWheels, Set.fromList [ID "4"])]
 
-mapTwoProperties :: Map Property [IRI]
-mapTwoProperties = fromList [(numWheels, [ID "4", ID "2"]), (hasName, [myName, test])]
-mapTwoPropertiesResult :: Map Property [IRI]
-mapTwoPropertiesResult = fromList [(numWheels, [ID "4"]), (hasName, [test])]
+
+mapTwoProperties :: Map Property (Set.Set IRI)
+mapTwoProperties = fromList [(numWheels, twoFourSet), (hasName, Set.fromList [myName, test])]
+mapTwoPropertiesOneEach :: Map Property (Set.Set IRI)
+mapTwoPropertiesOneEach = fromList [(numWheels, fourSet), (hasName, Set.fromList [test])]
 
 spec :: Spec
 spec = do
@@ -94,20 +101,21 @@ spec = do
 
     describe "removeProperties" $ do
       it "remove one iri from two differen properties" $
-        removeProperties mapTwoProperties [changeWheelsToTwo, changeNameMyName] `shouldBe` mapTwoPropertiesResult
+        removeProperties mapTwoProperties (Set.fromList [changeWheelsToTwo, changeNameMyName]) `shouldBe` mapTwoPropertiesOneEach
       it "remove two properties completely" $
-        removeProperties mapTwoProperties [changeWheelsTwoFour, changeNameMyName, changeNameTest]
+        removeProperties mapTwoProperties (Set.fromList [changeWheelsTwoFour, changeNameMyName, changeNameTest])
         `shouldBe` empty
 
     describe "addProperty" $ do
       it "add one iri to PropertyMap" $
         addProperty mapOne changeWheelsToTwo `shouldBe` mapTwo
       it "add multiple iris to empty PropertyMap" $
-        addProperty empty changeWheelsFourTwo `shouldBe` mapTwo
+        addProperty empty changeWheelsTwoFour `shouldBe` mapTwo
+
 
     describe "branchToPrototype" $ do
       it "branch with one item" $
-        branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=fromList[(numWheels, [ID "4"])]}
+        branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=fromList[(numWheels, fourSet)]}
 
     describe "computeFixpoint" $ do
         it "reduce to P0" $
