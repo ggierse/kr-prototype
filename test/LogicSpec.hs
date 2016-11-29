@@ -116,7 +116,19 @@ spec = do
       it "add one iri to two different properties each" $
         addProperties mapTwoPropertiesOneEach (Set.fromList [changeWheelsToTwo, changeNameMyName]) `shouldBe` mapTwoProperties
 
-    describe "branchToPrototype" $ do
+    describe "applyPrototypeExpression" $ do
+      it "add one prototype expression to prototype" $
+        let basePrototype = PT {name=bike, properties=Map.fromList [(numWheels, fourSet)]}
+            protoExpression = Proto {base = P0, add =Set.singleton changeWheelsToTwo, remove = Set.singleton changeWheelsToFour}
+            expectedPrototype = PT {name=bike, properties=Map.singleton numWheels twoSet}
+        in applyPrototypeExpression basePrototype protoExpression `shouldBe` expectedPrototype
+      it "remove everything from prototype" $
+        let basePrototype = PT {name=bike, properties=Map.fromList [(numWheels, twoFourSet)]}
+            protoExpression = Proto {base = P0, add =Set.empty, remove = Set.fromList [changeWheelsToFour, changeWheelsToTwo]}
+            expectedPrototype = PT {name=bike, properties=Map.empty}
+        in applyPrototypeExpression basePrototype protoExpression `shouldBe` expectedPrototype
+
+    describe "branchToPrototype" $
       it "branch with one item" $
         branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=Map.fromList[(numWheels, fourSet)]}
 
