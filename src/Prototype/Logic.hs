@@ -61,6 +61,10 @@ isFixPoint Proto {base=P0, add=_, remove = rem1}
   | otherwise = False
 isFixPoint _ = False
 
+computeAllFixpoints :: KnowledgeBase -> KnowledgeBase
+computeAllFixpoints kb = kb
+
+
 computeFixpoint :: KnowledgeBase -> IRI -> PrototypeExpression
 computeFixpoint kbMap iri =
   let original = kbMap Map.! iri

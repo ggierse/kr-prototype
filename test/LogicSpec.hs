@@ -66,6 +66,10 @@ carFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.
 testKB :: KnowledgeBase
 testKB = Map.fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
 
+testKBFixed :: Map.Map IRI PrototypeExpression
+testKBFixed = Map.fromList [(vehicle, vehicleProto), (bike, bikeFixpoint), (car, carFixpoint)]
+
+
 mapTwo :: Map.Map Property (Set.Set IRI)
 mapTwo = Map.fromList [(numWheels, Set.fromList [ID "4", ID "2"])]
 mapOne :: Map.Map Property (Set.Set IRI)
@@ -144,3 +148,7 @@ spec = do
         computeFixpoint testKB car `shouldBe` carFixpoint
       it "already fixpoint should still be fixpoint" $
         computeFixpoint testKB vehicle `shouldBe` testKB Map.! vehicle
+
+    describe "computeAllFixpoints" $
+      it "compute fixpoints for simple knowledge base" $
+        computeAllFixpoints testKB `shouldBe` testKBFixed
