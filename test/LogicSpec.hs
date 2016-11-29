@@ -138,7 +138,9 @@ spec = do
         branchToPrototype car [carProto, bikeProto, vehicleProto] `shouldBe` PT {name=car, properties=Map.fromList[(numWheels, fourSet)]}
 
     describe "computeFixpoint" $ do
-        it "reduce to P0" $
-            computeFixpoint testKB bike `shouldBe` bikeFixpoint
-        it "another test" $
-          computeFixpoint testKB car `shouldBe` carFixpoint
+      it "reduce to P0" $
+        computeFixpoint testKB bike `shouldBe` bikeFixpoint
+      it "another test" $
+        computeFixpoint testKB car `shouldBe` carFixpoint
+      it "already fixpoint should still be fixpoint" $
+        computeFixpoint testKB vehicle `shouldBe` testKB Map.! vehicle
