@@ -1,4 +1,4 @@
-module LogicSpec (spec) where
+module BasisSpec (spec) where
 import Prototype.Basis
 import Test.Hspec
 
