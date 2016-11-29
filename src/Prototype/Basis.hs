@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 --
--- Module      :  Prototype.Logic
+-- Module      :  Prototype.Basis
 -- Copyright   :
 -- License     :  AllRightsReserved
 --
@@ -12,7 +12,7 @@
 --
 -----------------------------------------------------------------------------
 
-module Prototype.Logic where
+module Prototype.Basis where
 
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set

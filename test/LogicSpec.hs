@@ -1,5 +1,5 @@
 module LogicSpec (spec) where
-import Prototype.Logic
+import Prototype.Basis
 import Test.Hspec
 
 import qualified Data.Map.Strict as Map
