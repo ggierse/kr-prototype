@@ -14,15 +14,14 @@
 
 module Prototype.Logic where
 
-import Data.Map.Strict as Map
-import Data.List as List
+import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 
 type Set = Set.Set
 
 data IRI = ID String deriving (Show, Eq, Ord)
 data Property = Prop IRI deriving (Show, Eq, Ord)
-type PropertyMap = Map Property (Set.Set IRI)
+type PropertyMap = Map.Map Property (Set.Set IRI)
 data Bases = Base IRI | P0 deriving (Show, Eq)
 
 data SimpleChangeExpression = Change Property (Set.Set IRI) deriving (Show, Eq, Ord)
@@ -34,7 +33,7 @@ data PrototypeExpression = Proto {
 
 data Prototype = PT {name :: IRI, properties :: PropertyMap} deriving (Show, Eq)
 
-type KnowledgeBase = Map IRI PrototypeExpression
+type KnowledgeBase = Map.Map IRI PrototypeExpression
 
 
 
@@ -63,22 +62,21 @@ isFixPoint _ = False
 
 computeFixpoint :: KnowledgeBase -> IRI -> PrototypeExpression
 computeFixpoint kbMap iri =
-  let original = kbMap ! iri
+  let original = kbMap Map.! iri
       --branch = getBranchToP0 kbMap original
   in original --PT {name=iri, properties=PList empty}
 --}
 -- TODO finish this
 
 branchToPrototype :: IRI -> [PrototypeExpression] -> Prototype
-branchToPrototype iri []= PT {name=iri, properties=empty}
-branchToPrototype iri (_head : _tail) = PT{name=iri, properties=empty}
+branchToPrototype iri []= PT {name=iri, properties=Map.empty}
+branchToPrototype iri (_head : _tail) = PT{name=iri, properties=Map.empty}
 
 -- TODO more than one simple change expression
 applyPrototypeExpression :: Prototype -> PrototypeExpression -> Prototype
 applyPrototypeExpression
-  PT{name=iri, properties=plist} Proto{base=_, add=_add1, remove=rem1} =
-    PT{name=iri, properties=removeProperties plist rem1}
-    --addProperty (removeProperty plist rem1) add1
+  PT{name=iri, properties=plist} Proto{base=_, add=add1, remove=rem1} =
+    PT{name=iri, properties=addProperties (removeProperties plist rem1) add1}
 
 removeProperties :: PropertyMap -> Set.Set SimpleChangeExpression -> PropertyMap
 removeProperties = Set.foldl removeProperty
@@ -91,15 +89,15 @@ removeProperty propMap change =
 
 removeIfPropertyExists :: PropertyMap -> SimpleChangeExpression -> PropertyMap
 removeIfPropertyExists propMap (Change prop iris) =
-  mapWithKey (\k v -> removeIrisIfPropertyEqual (k,v) (prop, iris) ) propMap
+  Map.mapWithKey (\k v -> removeIrisIfPropertyEqual (k,v) (prop, iris) ) propMap
 
 removeIrisIfPropertyEqual :: (Property, Set.Set IRI) -> (Property, Set.Set IRI) -> Set.Set IRI
 removeIrisIfPropertyEqual (pBase, irisBase) (pRemove,irisRemove)
   | pBase == pRemove = irisBase Set.\\ irisRemove
   | otherwise = irisBase
 
-addProperties :: PropertyMap -> [SimpleChangeExpression] -> PropertyMap
-addProperties = List.foldl addProperty
+addProperties :: PropertyMap -> Set.Set SimpleChangeExpression -> PropertyMap
+addProperties = Set.foldl addProperty
 
 addProperty :: PropertyMap -> SimpleChangeExpression -> PropertyMap
 addProperty propMap (Change prop iris) =
@@ -113,7 +111,7 @@ getBranchToP0 :: KnowledgeBase -> PrototypeExpression -> [PrototypeExpression]
 getBranchToP0 kbMap proto@Proto{base=parent, add=_, remove=_} =
   let parentMaybeIri = baseToIri parent
   in case parentMaybeIri of
-    Just parentIri -> proto : getBranchToP0 kbMap (kbMap ! parentIri)
+    Just parentIri -> proto : getBranchToP0 kbMap (kbMap Map.! parentIri)
     Nothing -> [proto]
 
 -- computeFixpointFromBranch :: [PrototypeExpression] -> PrototypeExpression
