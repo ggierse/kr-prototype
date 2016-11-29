@@ -2,7 +2,7 @@ module LogicSpec (spec) where
 import Prototype.Logic
 import Test.Hspec
 
-import Data.Map.Strict as Map
+import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 
 test :: IRI
@@ -61,18 +61,18 @@ bikeFixpoint :: PrototypeExpression
 bikeFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToTwo], remove=Set.empty}
 
 testKB :: KnowledgeBase
-testKB = fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
+testKB = Map.fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
 
-mapTwo :: Map Property (Set.Set IRI)
-mapTwo = fromList [(numWheels, Set.fromList [ID "4", ID "2"])]
-mapOne :: Map Property (Set.Set IRI)
-mapOne = fromList [(numWheels, Set.fromList [ID "4"])]
+mapTwo :: Map.Map Property (Set.Set IRI)
+mapTwo = Map.fromList [(numWheels, Set.fromList [ID "4", ID "2"])]
+mapOne :: Map.Map Property (Set.Set IRI)
+mapOne = Map.fromList [(numWheels, Set.fromList [ID "4"])]
 
 
-mapTwoProperties :: Map Property (Set.Set IRI)
-mapTwoProperties = fromList [(numWheels, twoFourSet), (hasName, Set.fromList [myName, test])]
-mapTwoPropertiesOneEach :: Map Property (Set.Set IRI)
-mapTwoPropertiesOneEach = fromList [(numWheels, fourSet), (hasName, Set.fromList [test])]
+mapTwoProperties :: Map.Map Property (Set.Set IRI)
+mapTwoProperties = Map.fromList [(numWheels, twoFourSet), (hasName, Set.fromList [myName, test])]
+mapTwoPropertiesOneEach :: Map.Map Property (Set.Set IRI)
+mapTwoPropertiesOneEach = Map.fromList [(numWheels, fourSet), (hasName, Set.fromList [test])]
 
 spec :: Spec
 spec = do
@@ -97,20 +97,20 @@ spec = do
       it "remove one iri of two" $
         removeProperty mapTwo changeWheelsToTwo `shouldBe` mapOne
       it "remove all iris" $
-        removeProperty mapTwo changeWheelsTwoFour `shouldBe` empty
+        removeProperty mapTwo changeWheelsTwoFour `shouldBe` Map.empty
 
     describe "removeProperties" $ do
       it "remove one iri from two differen properties" $
         removeProperties mapTwoProperties (Set.fromList [changeWheelsToTwo, changeNameMyName]) `shouldBe` mapTwoPropertiesOneEach
       it "remove two properties completely" $
         removeProperties mapTwoProperties (Set.fromList [changeWheelsTwoFour, changeNameMyName, changeNameTest])
-        `shouldBe` empty
+        `shouldBe` Map.empty
 
     describe "addProperty" $ do
       it "add one iri to PropertyMap" $
         addProperty mapOne changeWheelsToTwo `shouldBe` mapTwo
       it "add multiple iris to empty PropertyMap" $
-        addProperty empty changeWheelsTwoFour `shouldBe` mapTwo
+        addProperty Map.empty changeWheelsTwoFour `shouldBe` mapTwo
 
     describe "addProperties" $
       it "add one iri to two different properties each" $
@@ -118,7 +118,7 @@ spec = do
 
     describe "branchToPrototype" $ do
       it "branch with one item" $
-        branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=fromList[(numWheels, fourSet)]}
+        branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=Map.fromList[(numWheels, fourSet)]}
 
     describe "computeFixpoint" $ do
         it "reduce to P0" $
