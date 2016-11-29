@@ -64,10 +64,20 @@ isFixPoint _ = False
 computeFixpoint :: KnowledgeBase -> IRI -> PrototypeExpression
 computeFixpoint kbMap iri =
   let original = kbMap Map.! iri
-      --branch = getBranchToP0 kbMap original
-  in original --PT {name=iri, properties=PList empty}
---}
--- TODO finish this
+      branch = getBranchToP0 kbMap original
+      prototype = branchToPrototype iri branch
+  in prototypeToFixpoint prototype
+
+prototypeToFixpoint :: Prototype -> PrototypeExpression
+prototypeToFixpoint PT {name=_iri, properties=props} =
+  Proto{base=P0, add=propertyMapToChangeExpressions props, remove=Set.empty}
+
+propertyMapToChangeExpressions :: PropertyMap -> Set.Set SimpleChangeExpression
+propertyMapToChangeExpressions = Map.foldlWithKey foldPropertyIrisToChangeSet Set.empty
+
+foldPropertyIrisToChangeSet :: Set.Set SimpleChangeExpression -> Property -> Set.Set IRI -> Set.Set SimpleChangeExpression
+foldPropertyIrisToChangeSet changeSet propName iris =
+  Set.insert (Change propName iris) changeSet
 
 branchToPrototype :: IRI -> [PrototypeExpression] -> Prototype
 branchToPrototype iri branch =
