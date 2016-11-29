@@ -60,6 +60,9 @@ carProto = Proto {base=iriToBase bike, add=Set.fromList [changeWheelsToFour], re
 bikeFixpoint :: PrototypeExpression
 bikeFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToTwo], remove=Set.empty}
 
+carFixpoint :: PrototypeExpression
+carFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty}
+
 testKB :: KnowledgeBase
 testKB = Map.fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
 
@@ -138,4 +141,4 @@ spec = do
         it "reduce to P0" $
             computeFixpoint testKB bike `shouldBe` bikeFixpoint
         it "another test" $
-          True `shouldBe` True
+          computeFixpoint testKB car `shouldBe` carFixpoint
