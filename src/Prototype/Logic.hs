@@ -16,6 +16,7 @@ module Prototype.Logic where
 
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
+import qualified Data.List as List
 
 type Set = Set.Set
 
@@ -69,13 +70,14 @@ computeFixpoint kbMap iri =
 -- TODO finish this
 
 branchToPrototype :: IRI -> [PrototypeExpression] -> Prototype
-branchToPrototype iri []= PT {name=iri, properties=Map.empty}
-branchToPrototype iri (_head : _tail) = PT{name=iri, properties=Map.empty}
+branchToPrototype iri branch =
+  let basePrototype = PT {name=iri, properties=Map.empty}
+   in List.foldr applyPrototypeExpression basePrototype branch
 
 -- TODO more than one simple change expression
-applyPrototypeExpression :: Prototype -> PrototypeExpression -> Prototype
+applyPrototypeExpression :: PrototypeExpression -> Prototype -> Prototype
 applyPrototypeExpression
-  PT{name=iri, properties=plist} Proto{base=_, add=add1, remove=rem1} =
+  Proto{base=_, add=add1, remove=rem1} PT{name=iri, properties=plist} =
     PT{name=iri, properties=addProperties (removeProperties plist rem1) add1}
 
 removeProperties :: PropertyMap -> Set.Set SimpleChangeExpression -> PropertyMap

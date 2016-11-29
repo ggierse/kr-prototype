@@ -119,18 +119,20 @@ spec = do
     describe "applyPrototypeExpression" $ do
       it "add one prototype expression to prototype" $
         let basePrototype = PT {name=bike, properties=Map.fromList [(numWheels, fourSet)]}
-            protoExpression = Proto {base = P0, add =Set.singleton changeWheelsToTwo, remove = Set.singleton changeWheelsToFour}
+            protoExpression = Proto {base=P0, add=Set.singleton changeWheelsToTwo, remove=Set.singleton changeWheelsToFour}
             expectedPrototype = PT {name=bike, properties=Map.singleton numWheels twoSet}
-        in applyPrototypeExpression basePrototype protoExpression `shouldBe` expectedPrototype
+        in applyPrototypeExpression protoExpression basePrototype`shouldBe` expectedPrototype
       it "remove everything from prototype" $
         let basePrototype = PT {name=bike, properties=Map.fromList [(numWheels, twoFourSet)]}
             protoExpression = Proto {base = P0, add =Set.empty, remove = Set.fromList [changeWheelsToFour, changeWheelsToTwo]}
             expectedPrototype = PT {name=bike, properties=Map.empty}
-        in applyPrototypeExpression basePrototype protoExpression `shouldBe` expectedPrototype
+        in applyPrototypeExpression protoExpression basePrototype `shouldBe` expectedPrototype
 
-    describe "branchToPrototype" $
+    describe "branchToPrototype" $ do
       it "branch with one item" $
         branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=Map.fromList[(numWheels, fourSet)]}
+      it "branch with two items" $
+        branchToPrototype car [carProto, bikeProto, vehicleProto] `shouldBe` PT {name=car, properties=Map.fromList[(numWheels, fourSet)]}
 
     describe "computeFixpoint" $ do
         it "reduce to P0" $
