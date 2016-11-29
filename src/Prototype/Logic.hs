@@ -62,7 +62,7 @@ isFixPoint Proto {base=P0, add=_, remove = rem1}
 isFixPoint _ = False
 
 computeAllFixpoints :: KnowledgeBase -> KnowledgeBase
-computeAllFixpoints kb = kb
+computeAllFixpoints kb = Map.mapWithKey (\ key _ -> computeFixpoint kb key) kb
 
 
 computeFixpoint :: KnowledgeBase -> IRI -> PrototypeExpression
