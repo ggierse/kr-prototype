@@ -10,10 +10,10 @@ import qualified Data.Set as Set
 
 spec :: Spec
 spec = do
-    describe "changeExpressionIsSpecialization" $ do
+    describe "changeExpressionIsSpecialization" $
         context "one change expression is a specialization of another if" $ do
           it "they are equal" $
-            True `shouldBe` False
+            changeExpressionIsSpecialization changeNameMyName changeNameMyName `shouldBe` True
           it "the specialized is a subset of the generalization" $
             True `shouldBe` False
           it "the specialized fullfills a number constraint exposed by the generalization" $
