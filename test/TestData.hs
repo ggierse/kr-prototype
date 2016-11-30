@@ -1,6 +1,7 @@
 module TestData where
 
 import Prototype.Basis
+import qualified Prototype.Specialization as Special
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 
@@ -19,13 +20,13 @@ changeNameTest = Change hasName (Set.fromList [test])
 changeWheelsMyName :: SimpleChangeExpression
 changeWheelsMyName = Change numWheels (Set.singleton myName)
 
-fixpointProto :: PrototypeExpression
+fixpointProto :: PrototypeExpression IRI
 fixpointProto = Proto {base = P0, add = Set.empty, remove = Set.empty}
 
-protoUnfixed :: PrototypeExpression
+protoUnfixed :: PrototypeExpression IRI
 protoUnfixed = Proto {base=P0, add = Set.empty, remove = Set.fromList [changeNameMyName]}
 
-protoUnfixed2 :: PrototypeExpression
+protoUnfixed2 :: PrototypeExpression IRI
 protoUnfixed2 = Proto {base = iriToBase test, add=Set.fromList [changeNameMyName], remove = Set.empty}
 
 vehicle :: IRI
@@ -51,23 +52,23 @@ changeWheelsToTwo = Change numWheels twoSet
 changeWheelsTwoFour :: SimpleChangeExpression
 changeWheelsTwoFour = Change numWheels twoFourSet
 
-vehicleProto :: PrototypeExpression
+vehicleProto :: PrototypeExpression IRI
 vehicleProto = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty}
-bikeProto :: PrototypeExpression
+bikeProto :: PrototypeExpression IRI
 bikeProto = Proto {base=iriToBase vehicle, add=Set.fromList [changeWheelsToTwo], remove = Set.fromList [changeWheelsToFour]}
-carProto :: PrototypeExpression
+carProto :: PrototypeExpression IRI
 carProto = Proto {base=iriToBase bike, add=Set.fromList [changeWheelsToFour], remove=Set.fromList [changeWheelsToTwo]}
 
-bikeFixpoint :: PrototypeExpression
+bikeFixpoint :: PrototypeExpression IRI
 bikeFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToTwo], remove=Set.empty}
 
-carFixpoint :: PrototypeExpression
+carFixpoint :: PrototypeExpression IRI
 carFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty}
 
-testKB :: KnowledgeBase
+testKB :: KnowledgeBase IRI
 testKB = Map.fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
 
-testKBFixed :: Map.Map IRI PrototypeExpression
+testKBFixed :: KnowledgeBase IRI
 testKBFixed = Map.fromList [(vehicle, vehicleProto), (bike, bikeFixpoint), (car, carFixpoint)]
 
 
