@@ -83,7 +83,6 @@ branchToPrototype iri branch =
   let basePrototype = PT {name=iri, properties=Map.empty}
    in List.foldr applyPrototypeExpression basePrototype branch
 
--- TODO more than one simple change expression
 applyPrototypeExpression :: (Ord a) => PrototypeExpression a -> Prototype a -> Prototype a
 applyPrototypeExpression
   Proto{base=_, add=add1, remove=rem1} PT{name=iri, properties=plist} =
@@ -94,9 +93,7 @@ removeProperties = Set.foldl removeProperty
 
 removeProperty :: (Ord a) => PropertyMap a -> ChangeExpression a -> PropertyMap a
 removeProperty propMap change =
-  --filterWithKey (\prop _ -> prop /= properties)
   Map.filter (not . Set.null) (removeIfPropertyExists propMap change)
-  --mapWithKey (\k v -> removeIrisIfPropertyEqual (k,v) (prop, iris) ) propMap
 
 removeIfPropertyExists :: (Ord a) => PropertyMap a -> ChangeExpression a -> PropertyMap a
 removeIfPropertyExists propMap (Change prop iris) =
