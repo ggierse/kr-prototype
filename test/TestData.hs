@@ -16,6 +16,8 @@ changeNameMyName :: SimpleChangeExpression
 changeNameMyName = Change hasName (Set.fromList [myName])
 changeNameTest :: SimpleChangeExpression
 changeNameTest = Change hasName (Set.fromList [test])
+changeWheelsMyName :: SimpleChangeExpression
+changeWheelsMyName = Change numWheels (Set.singleton myName)
 
 fixpointProto :: PrototypeExpression
 fixpointProto = Proto {base = P0, add = Set.empty, remove = Set.empty}
