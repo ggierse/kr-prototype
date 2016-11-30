@@ -18,7 +18,11 @@ spec = do
             True `shouldBe` False
           it "the specialized fullfills a number constraint exposed by the generalization" $
             True `shouldBe` False
+          it "the specialized fullfills an existance quantification constraint exposed by the generalization" $
+            True `shouldBe` False
     describe "isSpecialization" $
-      context "one PrototypeExpression is a specialization of another if" $
+      context "one PrototypeExpression is a specialization of another if" $ do
         it "all properties are a changeExpresionSpecialization" $
+          True `shouldBe` False
+        it "should be false if PrototypeExpressions are not fixpoints" $
           True `shouldBe` False
