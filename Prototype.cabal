@@ -45,3 +45,4 @@ test-suite spec
     other-modules:
       Prototype.Basis
       Prototype.Specialization
+      TestData

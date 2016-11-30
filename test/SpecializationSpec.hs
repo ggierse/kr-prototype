@@ -3,6 +3,8 @@ import Prototype.Basis
 import Prototype.Specialization
 import Test.Hspec
 
+import TestData
+
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 
