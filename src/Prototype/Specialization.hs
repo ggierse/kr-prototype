@@ -11,6 +11,7 @@ data ComplexValue = Value IRI | Const Constraint deriving (Show, Eq, Ord)
 
 type ConstraintView = Maybe Constraint
 
+
 class PossiblyConstraint a where
   isConstraint :: a -> Bool
   getConstraint :: a -> Maybe Constraint
@@ -58,6 +59,12 @@ getIris complexSet =
       justIris = Set.filter isJust maybeIris
   in Set.map fromJust justIris
 
+getConstraints :: Set.Set ComplexValue -> Set.Set Constraint
+getConstraints complexSet =
+  let maybeConstraint = Set.map getConstraint complexSet
+      justConstraint = Set.filter isJust maybeConstraint
+  in Set.map fromJust justConstraint
+
 instance Specializable SimpleChangeExpression SimpleChangeExpression where
   isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
     | propS /= propG = False
@@ -70,7 +77,14 @@ instance Specializable (ChangeExpression ComplexValue) (ChangeExpression Complex
     | propS /= propG = False
     | general == special = True
     | propSetS `Set.isSubsetOf` propSetG = True
+    | evaluateConstraints (getConstraints propSetG) (getIris propSetS) = True
     | otherwise = False
+
+
+
+evaluateConstraints :: Set.Set Constraint -> Set.Set IRI -> Bool
+evaluateConstraints constraints iris =
+  Set.foldl (\ prev x -> prev && (iris `isSpecializationOf` x)) True constraints
 
     {-- für alle properties der generalization muss gelten
      ach warte das ist komisch für nur eine change expression.
