@@ -58,7 +58,14 @@ getIris complexSet =
       justIris = Set.filter isJust maybeIris
   in Set.map fromJust justIris
 
-instance (Ord a) => Specializable (ChangeExpression a) (ChangeExpression a) where
+instance Specializable SimpleChangeExpression SimpleChangeExpression where
+  isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
+    | propS /= propG = False
+    | general == special = True
+    | propSetS `Set.isSubsetOf` propSetG = True
+    | otherwise = False
+
+instance Specializable (ChangeExpression ComplexValue) (ChangeExpression ComplexValue) where
   isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
     | propS /= propG = False
     | general == special = True
