@@ -82,3 +82,54 @@ mapTwoProperties :: Map.Map Property (Set.Set IRI)
 mapTwoProperties = Map.fromList [(numWheels, twoFourSet), (hasName, Set.fromList [myName, test])]
 mapTwoPropertiesOneEach :: Map.Map Property (Set.Set IRI)
 mapTwoPropertiesOneEach = Map.fromList [(numWheels, fourSet), (hasName, Set.fromList [test])]
+
+
+
+parent :: IRI
+parent = ID "family:parent"
+hasChildren :: Property
+hasChildren = Prop (ID "family:hasChildren")
+
+frank :: IRI
+frank = ID "family:frank"
+jan :: IRI
+jan = ID "family:jan"
+susan :: IRI
+susan = ID "family:susan"
+lars :: IRI
+lars = ID "family:lars"
+tad :: IRI
+tad = ID "family:tad"
+tamara :: IRI
+tamara = ID "family:tamara"
+
+oneChild :: ChangeExpression Special.ComplexValue
+oneChild = Change hasChildren (Set.singleton (Special.Value jan))
+threeChildren :: ChangeExpression Special.ComplexValue
+threeChildren = Change hasChildren (Set.fromList [Special.Value frank, Special.Value tamara, Special.Value susan])
+
+
+frankProto :: PrototypeExpression IRI
+frankProto = Proto {base=P0, add=Set.singleton (Change hasChildren (Set.singleton jan)), remove=Set.empty}
+janProto :: PrototypeExpression propValueType
+janProto = Proto {base=P0, add=Set.empty, remove=Set.empty}
+tadProto :: PrototypeExpression IRI
+tadProto = Proto {
+  base=P0,
+  add=Set.singleton (Change hasChildren (Set.fromList [frank, tamara, susan])),
+  remove=Set.empty}
+
+childLeast2Constraint :: ChangeExpression Special.ComplexValue
+childLeast2Constraint = Change hasChildren (Set.singleton (Special.Const (Special.Atleast 2)))
+childAtmost2Constraint :: ChangeExpression Special.ComplexValue
+childAtmost2Constraint = Change hasChildren (Set.singleton (Special.Const (Special.Atmost 2)))
+childExactly1Constraint :: ChangeExpression Special.ComplexValue
+childExactly1Constraint = Change hasChildren (Set.singleton (Special.Const (Special.Exactly 1)))
+
+parentProto :: PrototypeExpression Special.ComplexValue
+parentProto = Proto {base=P0, add=Set.singleton childLeast2Constraint, remove=Set.empty}
+
+{--
+familyKB :: Map.Map IRI (PrototypeExpression Special.ComplexValue)
+familyKB = Map.fromList [(parent, parentProto), (frank, frankProto), (jan, janProto), (tad,tadProto)]
+--}
