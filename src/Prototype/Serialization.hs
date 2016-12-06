@@ -79,6 +79,15 @@ jsonFile = "test.json"
 getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
 
+readEntries :: FilePath -> IO (Maybe [JsonProto])
+readEntries path = decode <$> getJSON
+
+-- TODO try that: http://stackoverflow.com/questions/7691374/io-and-maybe-monad-interaction
+readKB :: FilePath -> IO (Maybe (Base.KnowledgeBase Base.IRI))
+readKB path = case (readEntries path) of
+  Nothing -> Nothing
+  Just a -> protosToKB a
+
 main :: IO ()
 main = do
  -- Get JSON data and decode it
