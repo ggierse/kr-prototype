@@ -1,0 +1,2 @@
+[{"id":"test","base":{"tag":"P0"},"add":[["hasName",["myname"]]],"rem":[],"remAll":[]},
+{"id":"test2","base":{"tag":"P0"},"add":[["hasName",["noname"]]],"rem":[],"remAll":[]}]

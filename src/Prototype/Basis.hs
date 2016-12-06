@@ -11,27 +11,30 @@
 -- |
 --
 -----------------------------------------------------------------------------
+{-# LANGUAGE DeriveGeneric #-}
 
 module Prototype.Basis where
 
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import qualified Data.List as List
+import GHC.Generics
 
 type Set = Set.Set
 
-data IRI = ID String deriving (Show, Eq, Ord)
-data Property = Prop IRI deriving (Show, Eq, Ord)
+data IRI = ID String deriving (Show, Eq, Ord, Generic)
+data Property = Prop IRI deriving (Show, Eq, Ord, Generic)
 type PropertyMap propValueType = Map.Map Property (Set.Set propValueType)
-data Bases = Base IRI | P0 deriving (Show, Eq)
+data Bases = Base IRI | P0 deriving (Show, Eq, Generic)
 
-data ChangeExpression propValueType = Change Property (Set.Set propValueType) deriving (Show, Eq, Ord)
+data ChangeExpression propValueType = Change Property (Set.Set propValueType) deriving (Show, Eq, Ord, Generic)
 type SimpleChangeExpression = ChangeExpression IRI
 
 data PrototypeExpression propValueType= Proto {
   base :: Bases,
   add :: Set.Set (ChangeExpression propValueType),
-  remove :: Set.Set (ChangeExpression propValueType)} deriving (Show, Eq)
+  remove :: Set.Set (ChangeExpression propValueType),
+  remAll :: Set.Set Property} deriving (Show, Eq)
 
 data Prototype propValueType = PT {name :: IRI, properties :: PropertyMap propValueType} deriving (Show, Eq)
 
