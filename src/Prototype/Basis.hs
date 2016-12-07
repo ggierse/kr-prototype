@@ -54,8 +54,8 @@ baseToIri P0 = Nothing
 baseToIri (Base iri) = Just iri
 
 isFixPoint :: PrototypeExpression a -> Bool
-isFixPoint Proto {base=P0, add=_, remove = rem1}
-  | Set.null rem1 = True
+isFixPoint Proto {base=P0, add=_, remove = rem1, remAll = rem2}
+  | Set.null rem1 && Set.null rem2 = True
   | otherwise = False
 isFixPoint _ = False
 
@@ -72,7 +72,7 @@ computeFixpoint kbMap iri =
 
 prototypeToFixpoint :: (Ord a) => Prototype a -> PrototypeExpression a
 prototypeToFixpoint PT {name=_iri, properties=props} =
-  Proto{base=P0, add=propertyMapToChangeExpressions props, remove=Set.empty}
+  Proto{base=P0, add=propertyMapToChangeExpressions props, remove=Set.empty, remAll=Set.empty}
 
 propertyMapToChangeExpressions :: (Ord a) => PropertyMap a -> Set.Set (ChangeExpression a)
 propertyMapToChangeExpressions = Map.foldlWithKey foldPropertyValuesToChangeSet Set.empty
@@ -88,8 +88,11 @@ branchToPrototype iri branch =
 
 applyPrototypeExpression :: (Ord a) => PrototypeExpression a -> Prototype a -> Prototype a
 applyPrototypeExpression
-  Proto{base=_, add=add1, remove=rem1} PT{name=iri, properties=plist} =
-    PT{name=iri, properties=addProperties (removeProperties plist rem1) add1}
+  Proto{base=_, add=add1, remove=rem1, remAll=rem2} PT{name=iri, properties=plist} =
+    PT{name=iri, properties=addProperties (removeProperties (removeAllProps plist rem2) rem1) add1}
+
+removeAllProps :: (Ord a) => PropertyMap a -> Set.Set Property -> PropertyMap a
+removeAllProps propMap propSet = Map.filterWithKey (\ k _ -> k `Set.notMember` propSet) propMap
 
 removeProperties :: (Ord a) => PropertyMap a-> Set.Set (ChangeExpression a) -> PropertyMap a
 removeProperties = Set.foldl removeProperty

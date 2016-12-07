@@ -21,13 +21,13 @@ changeWheelsMyName :: SimpleChangeExpression
 changeWheelsMyName = Change numWheels (Set.singleton myName)
 
 fixpointProto :: PrototypeExpression IRI
-fixpointProto = Proto {base = P0, add = Set.empty, remove = Set.empty}
+fixpointProto = Proto {base = P0, add = Set.empty, remove = Set.empty, remAll = Set.empty}
 
 protoUnfixed :: PrototypeExpression IRI
-protoUnfixed = Proto {base=P0, add = Set.empty, remove = Set.fromList [changeNameMyName]}
+protoUnfixed = Proto {base=P0, add = Set.empty, remove = Set.fromList [changeNameMyName], remAll = Set.empty}
 
 protoUnfixed2 :: PrototypeExpression IRI
-protoUnfixed2 = Proto {base = iriToBase test, add=Set.fromList [changeNameMyName], remove = Set.empty}
+protoUnfixed2 = Proto {base = iriToBase test, add=Set.fromList [changeNameMyName], remove = Set.empty, remAll = Set.empty}
 
 vehicle :: IRI
 vehicle = ID "test:vehicle"
@@ -53,17 +53,17 @@ changeWheelsTwoFour :: SimpleChangeExpression
 changeWheelsTwoFour = Change numWheels twoFourSet
 
 vehicleProto :: PrototypeExpression IRI
-vehicleProto = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty}
+vehicleProto = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty, remAll = Set.empty}
 bikeProto :: PrototypeExpression IRI
-bikeProto = Proto {base=iriToBase vehicle, add=Set.fromList [changeWheelsToTwo], remove = Set.fromList [changeWheelsToFour]}
+bikeProto = Proto {base=iriToBase vehicle, add=Set.fromList [changeWheelsToTwo], remove = Set.fromList [changeWheelsToFour], remAll = Set.empty}
 carProto :: PrototypeExpression IRI
-carProto = Proto {base=iriToBase bike, add=Set.fromList [changeWheelsToFour], remove=Set.fromList [changeWheelsToTwo]}
+carProto = Proto {base=iriToBase bike, add=Set.fromList [changeWheelsToFour], remove=Set.fromList [changeWheelsToTwo], remAll = Set.empty}
 
 bikeFixpoint :: PrototypeExpression IRI
-bikeFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToTwo], remove=Set.empty}
+bikeFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToTwo], remove=Set.empty, remAll = Set.empty}
 
 carFixpoint :: PrototypeExpression IRI
-carFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty}
+carFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty, remAll = Set.empty}
 
 testKB :: KnowledgeBase IRI
 testKB = Map.fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
@@ -83,6 +83,11 @@ mapTwoProperties = Map.fromList [(numWheels, twoFourSet), (hasName, Set.fromList
 mapTwoPropertiesOneEach :: Map.Map Property (Set.Set IRI)
 mapTwoPropertiesOneEach = Map.fromList [(numWheels, fourSet), (hasName, Set.fromList [test])]
 
+
+
+
+getChangeExpression :: Property -> [Special.ComplexValue] -> ChangeExpression Special.ComplexValue
+getChangeExpression prop values = Change prop (Set.fromList values)
 
 
 parent :: IRI
@@ -108,16 +113,20 @@ oneChild = Change hasChildren (Set.singleton (Special.Value jan))
 threeChildren :: ChangeExpression Special.ComplexValue
 threeChildren = Change hasChildren (Set.fromList [Special.Value frank, Special.Value tamara, Special.Value susan])
 
+constPlusChild :: ChangeExpression Special.ComplexValue
+constPlusChild = Change hasChildren (Set.fromList [Special.Const (Special.Atleast 3), Special.Value frank])
 
 frankProto :: PrototypeExpression IRI
-frankProto = Proto {base=P0, add=Set.singleton (Change hasChildren (Set.singleton jan)), remove=Set.empty}
+frankProto = Proto {base=P0, add=Set.singleton (Change hasChildren (Set.singleton jan)), remove=Set.empty, remAll = Set.empty}
 janProto :: PrototypeExpression propValueType
-janProto = Proto {base=P0, add=Set.empty, remove=Set.empty}
+janProto = Proto {base=P0, add=Set.empty, remove=Set.empty, remAll = Set.empty}
 tadProto :: PrototypeExpression IRI
 tadProto = Proto {
   base=P0,
   add=Set.singleton (Change hasChildren (Set.fromList [frank, tamara, susan])),
-  remove=Set.empty}
+  remove=Set.empty,
+  remAll = Set.empty
+}
 
 childLeast2Constraint :: ChangeExpression Special.ComplexValue
 childLeast2Constraint = Change hasChildren (Set.singleton (Special.Const (Special.Atleast 2)))
@@ -126,8 +135,9 @@ childAtmost2Constraint = Change hasChildren (Set.singleton (Special.Const (Speci
 childExactly1Constraint :: ChangeExpression Special.ComplexValue
 childExactly1Constraint = Change hasChildren (Set.singleton (Special.Const (Special.Exactly 1)))
 
+
 parentProto :: PrototypeExpression Special.ComplexValue
-parentProto = Proto {base=P0, add=Set.singleton childLeast2Constraint, remove=Set.empty}
+parentProto = Proto {base=P0, add=Set.singleton childLeast2Constraint, remove=Set.empty, remAll = Set.empty}
 
 {--
 familyKB :: Map.Map IRI (PrototypeExpression Special.ComplexValue)
