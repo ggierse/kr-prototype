@@ -1,11 +1,18 @@
-To build run:
+# Haskell Prototype implementation
+
+### Build
 
 cabal configure
+
 cabal build
 
 
-To run tests:
+### Run test suits
 cabal test
 
-To compute the fixpoint of a knowledge base given in JSON run:
-dist/build/Prototypedist/build/Prototype --fixpoint $FILENAME 
+### Compute the fixpoint of a knowledge base given in JSON
+dist/build/Prototypedist/build/Prototype --fixpoint $FILENAME
+
+### JSON example
+[{"id":"test","base":{"tag":"P0"},"add":[["hasName",["myname"]]],"rem":[],"remAll":[]},
+{"id":"test2","base":{"tag":"P0"},"add":[["hasName",["noname"]]],"rem":[],"remAll":[]}]
