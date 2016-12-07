@@ -39,7 +39,11 @@ data PrototypeExpression propValueType= Proto {
 data Prototype propValueType = PT {name :: IRI, properties :: PropertyMap propValueType} deriving (Show, Eq)
 
 type KnowledgeBase propValueType = Map.Map IRI (PrototypeExpression propValueType)
+showPretty :: (Show a) => KnowledgeBase a -> String
+showPretty = Map.foldrWithKey foldMapEntryToStr ""
 
+foldMapEntryToStr :: (Show a) => IRI -> a -> String -> String
+foldMapEntryToStr key value prev = prev ++ show key ++ ": " ++ show value ++ "\n"
 
 -- |
 -- Convert IRI to Bases type

@@ -24,9 +24,6 @@ instance ToJSON JsonProto where
   toEncoding = genericToEncoding defaultOptions
 instance FromJSON JsonProto
 
---instance ToJSON [JsonProto]
---instance FromJSON [JsonProto]
-
 instance ToJSON (Base.ChangeExpression Base.IRI)
 instance FromJSON (Base.ChangeExpression Base.IRI)
 
@@ -39,30 +36,25 @@ instance FromJSON Base.IRI
 instance ToJSON Base.Bases
 instance FromJSON Base.Bases
 
-carInterm = JProto {
-  Prototype.Serialization.id = Base.ID "test",
-  base = Base.P0,
-  add = Set.fromList [Base.Change (Base.Prop (Base.ID "hasName")) (Set.singleton (Base.ID "myname"))],
-  Prototype.Serialization.rem = Set.empty,
-  remAll = Set.empty
-}
-{--
-readKnowledgeBase :: FilePath -> Base.KnowledgeBase Base.IRI
-readKnowledgeBase path =
-  let jsonByteString = B.readFile path
-      protos = parseListOfProtos jsonByteString
-  in protosToKB protos
+main :: IO ()
+main = do
+ -- Get JSON data and decode it
+ let kb = readKB jsonFile
+ -- Compute the fixpoint
+ fixpoints <- Base.computeAllFixpoints <$> kb :: IO (Base.KnowledgeBase Base.IRI)
+ -- Show the result
+ putStr $ Base.showPretty fixpoints
 
-parseListOfProtos :: IO B.ByteString -> Maybe [JsonProto]
-parseListOfProtos string = do
-  s <- string
-  case s of
-    Left err -> Nothing
-    Right res -> Just (decode res)
---}
-protosToKB :: [JsonProto] -> Base.KnowledgeBase Base.IRI
-protosToKB protos =
+jsonFile :: FilePath
+jsonFile = "test.json"
+
+readKB :: FilePath -> IO (Base.KnowledgeBase Base.IRI)
+readKB path = protosToKB <$> readEntries path
+
+protosToKB :: Maybe [JsonProto] -> Base.KnowledgeBase Base.IRI
+protosToKB (Just protos) =
   Map.fromList (map jprotoToKBEntry protos)
+protosToKB Nothing = Map.empty
 
 jprotoToKBEntry :: JsonProto -> (Base.IRI, Base.PrototypeExpression Base.IRI)
 jprotoToKBEntry JProto {id=name, base=b, add=adds, rem=rems, remAll=remalls} =
@@ -73,29 +65,8 @@ jprotoToKBEntry JProto {id=name, base=b, add=adds, rem=rems, remAll=remalls} =
     Base.remAll = remalls
   })
 
-jsonFile :: FilePath
-jsonFile = "test.json"
-
-getJSON :: IO B.ByteString
-getJSON = B.readFile jsonFile
-
 readEntries :: FilePath -> IO (Maybe [JsonProto])
 readEntries path = decode <$> getJSON
 
--- TODO try that: http://stackoverflow.com/questions/7691374/io-and-maybe-monad-interaction
-readKB :: FilePath -> IO (Maybe (Base.KnowledgeBase Base.IRI))
-readKB path = case (readEntries path) of
-  Nothing -> Nothing
-  Just a -> protosToKB a
-
-main :: IO ()
-main = do
- -- Get JSON data and decode it
- d <- (decode <$> getJSON) :: IO (Maybe [JsonProto])
- -- If d is Left, the JSON was malformed.
- -- In that case, we report the error.
- -- Otherwise, we perform the operation of
- -- our choice. In this case, just print it.
- case d of
-  Nothing -> putStrLn "error parsing"
-  Just ps -> print (protosToKB ps)
+getJSON :: IO B.ByteString
+getJSON = B.readFile jsonFile
