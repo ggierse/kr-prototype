@@ -36,10 +36,10 @@ instance FromJSON Base.IRI
 instance ToJSON Base.Bases
 instance FromJSON Base.Bases
 
-main :: IO ()
-main = do
+readAndComputeFixpoint :: [String] -> IO ()
+readAndComputeFixpoint [fileName] = do
  -- Get JSON data and decode it
- let kb = readKB jsonFile
+ let kb = readKB fileName
  -- Compute the fixpoint
  fixpoints <- Base.computeAllFixpoints <$> kb :: IO (Base.KnowledgeBase Base.IRI)
  -- Show the result

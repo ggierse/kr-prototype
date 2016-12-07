@@ -16,23 +16,27 @@ module Main (
     main
 ) where
 
-
--- This strang looking comment adds code only needed when running the
--- doctest tests embedded in the comments
--- $setup
--- >>> import Data.List (stripPrefix)
-
--- | Simple function to create a hello message.
--- prop> stripPrefix "Hello " (hello s) == Just s
-hello :: String -> String
-hello s = "Hello " ++ s
-
--- data Identifier = ID String
---data Relation = Identifier | Specialization
---data Specialization = Atleast Integer | Atmost Integer
---data Triple = Sentence Identifier Relation Identifier
-
+import System.Environment
+import Prototype.Serialization
 
 
 main :: IO ()
-main = putStrLn (hello "World")
+main = do
+  (command:args) <- getArgs
+  let (Just action) = lookup command dispatch
+  action args
+
+dispatch :: [(String, [String] -> IO ())]
+dispatch =  [("--fixpoint", readAndComputeFixpoint),
+             ("-f", readAndComputeFixpoint),
+             ("--help", printHelp),
+             ("help", printHelp),
+             ("-h", printHelp)
+            ]
+
+printHelp :: [String] -> IO()
+printHelp _ = do
+  putStrLn "syntax:"
+  putStrLn "prototype --fixpoint $FILENAME"
+  putStrLn "prototype -f $FILENAME"
+  putStrLn "Reads a Knowledge Base from a json file and prints its fixpoints"
