@@ -2,7 +2,7 @@ module Prototype.Generator where
 
 import Prototype.Basis
 
---import Test.QuickCheck
+import System.Random
 
 import qualified Data.Bits as Bits
 import qualified Data.Set as Set
@@ -24,6 +24,15 @@ generateSimplePrototypeExpression b =
       remAll = Set.empty
     }
 
+genProtoWithOneProp :: Bases -> Property -> IRI -> PrototypeExpression IRI
+genProtoWithOneProp s p o =
+  Proto {
+      base = s,
+      add = Set.singleton (Change p (Set.singleton o)),
+      remove = Set.empty,
+      remAll = Set.empty
+    }
+
 {--
   * Generates a synthetic prototype KB. To generate the data we start with
   * one prototype which derives from {@link Prototype#P_0}, next we create
@@ -39,8 +48,6 @@ generateBaseline n =
   --in List.foldr (\ prev (key,value) -> Map.insert key value prev ) first (generateAllLayers layers)
   -- [Map IRI KnowledgeBase] -> Map IRI KnowledgeBase
   in Map.fromList (first : generateAllLayers layers)
-
-
 
 generateAllLayers :: [Int] -> [(IRI, PrototypeExpression IRI)]
 generateAllLayers = concatMap generateBaselineLayer
@@ -66,13 +73,29 @@ generateBlocks :: Int -> KnowledgeBase IRI
 generateBlocks n =
   let numberPerLayer = 100000
       firstValue = generateComplexId 0 0
-      baseLayer = idListToProtos [1..numberPerLayer]
+      property = Prop (ID "http://www.example.com#knows")
+      baseLayer = idListToProtos firstValue [1..numberPerLayer]
   in Map.empty
 
-idListToProtos :: [Int] -> [(IRI, PrototypeExpression IRI)]
-idListToProtos = map (genProto 0)
+generateBlockLayers :: [Int] -> [(IRI, PrototypeExpression IRI)]
+generateBlockLayers layers = []
 
-genProto :: Int -> Int -> (IRI, PrototypeExpression IRI)
-genProto i j =
+
+generateBlockLayerItem :: Int -> Int -> Int -> (IRI, PrototypeExpression IRI)
+generateBlockLayerItem i j numberPerLayer =
+  let parentnum = Quick.choose (0,numberPerLayer)
+      base = generateComplexId (i-1)
+  in (ID "", generateSimplePrototypeExpression (Base (ID "")))
+
+
+
+
+idListToProtos :: IRI -> [Int] -> [(IRI, PrototypeExpression IRI)]
+idListToProtos propVal = map (genProto propVal 0)
+
+genProto :: IRI -> Int -> Int -> (IRI, PrototypeExpression IRI)
+genProto propVal i j  =
+  let property = Prop (ID "http://www.example.com#knows")
+  in
   (generateBaseId i,
-  generateSimplePrototypeExpression  (iriToBase $ generateComplexId i j))
+  genProtoWithOneProp  (iriToBase $ generateComplexId i j) property propVal)
