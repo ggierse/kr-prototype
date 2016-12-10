@@ -25,7 +25,8 @@ executable Prototype
     other-modules:
       Prototype.Basis,
       Prototype.Specialization,
-      Prototype.Serialization
+      Prototype.Serialization,
+      Prototype.Generator
 
 test-suite test-Prototype
     type: exitcode-stdio-1.0
