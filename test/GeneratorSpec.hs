@@ -11,11 +11,11 @@ spec :: Spec
 spec = do
   describe "generateBaselineChild" $ do
     it "generate child: 1 1" $
-      generateBaselineChild 1 1 `shouldBe` (generateComplexId 1 1, Proto {base=Base (ID "http://www.example.com#object0_0"), add=Set.empty, remove=Set.empty, remAll=Set.empty} :: PrototypeExpression IRI)
+      generateBaselineChild 1 1 `shouldBe` (generateComplexId 1 1, Proto {base=Base (ID "http://www.example.com#object0_0"), add=Set.empty, remove=Set.empty, remAll=Set.empty} :: PrototypeDefinition IRI)
     it "generate another child: 1 3" $
-      generateBaselineChild 1 3 `shouldBe` (generateComplexId 1 3, Proto {base=Base (ID "http://www.example.com#object0_1"), add=Set.empty, remove=Set.empty, remAll=Set.empty} :: PrototypeExpression IRI)
+      generateBaselineChild 1 3 `shouldBe` (generateComplexId 1 3, Proto {base=Base (ID "http://www.example.com#object0_1"), add=Set.empty, remove=Set.empty, remAll=Set.empty} :: PrototypeDefinition IRI)
     it "generate one more: 2 6" $
-      generateBaselineChild 2 6 `shouldBe` (generateComplexId 2 6, Proto {base=Base (ID "http://www.example.com#object1_3"), add=Set.empty, remove=Set.empty, remAll=Set.empty} :: PrototypeExpression IRI)
+      generateBaselineChild 2 6 `shouldBe` (generateComplexId 2 6, Proto {base=Base (ID "http://www.example.com#object1_3"), add=Set.empty, remove=Set.empty, remAll=Set.empty} :: PrototypeDefinition IRI)
   describe "generateBaselineLayer" $ do
     it "generate 1. line" $
       generateBaselineLayer 1 `shouldBe` [

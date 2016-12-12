@@ -35,7 +35,7 @@ spec = do
     describe "removeAllProps" $
       it "remove all iris of a named property" $
         removeAllProps mapTwo (Set.singleton numWheels) `shouldBe` Map.empty
-        
+
     describe "removeProperties" $ do
       it "remove one iri from two differen properties" $
         removeProperties mapTwoProperties (Set.fromList [changeWheelsToTwo, changeNameMyName]) `shouldBe` mapTwoPropertiesOneEach
@@ -53,17 +53,17 @@ spec = do
       it "add one iri to two different properties each" $
         addProperties mapTwoPropertiesOneEach (Set.fromList [changeWheelsToTwo, changeNameMyName]) `shouldBe` mapTwoProperties
 
-    describe "applyPrototypeExpression" $ do
+    describe "applyPrototypeDefinition" $ do
       it "add one prototype expression to prototype" $
         let basePrototype = PT {name=bike, properties=Map.fromList [(numWheels, fourSet)]}
             protoExpression = Proto {base=P0, add=Set.singleton changeWheelsToTwo, remove=Set.singleton changeWheelsToFour, remAll=Set.empty}
             expectedPrototype = PT {name=bike, properties=Map.singleton numWheels twoSet}
-        in applyPrototypeExpression protoExpression basePrototype`shouldBe` expectedPrototype
+        in applyPrototypeDefinition protoExpression basePrototype`shouldBe` expectedPrototype
       it "remove everything from prototype" $
         let basePrototype = PT {name=bike, properties=Map.fromList [(numWheels, twoFourSet)]}
             protoExpression = Proto {base = P0, add =Set.empty, remove = Set.fromList [changeWheelsToFour, changeWheelsToTwo], remAll=Set.empty}
             expectedPrototype = PT {name=bike, properties=Map.empty}
-        in applyPrototypeExpression protoExpression basePrototype `shouldBe` expectedPrototype
+        in applyPrototypeDefinition protoExpression basePrototype `shouldBe` expectedPrototype
 
     describe "branchToPrototype" $ do
       it "branch with one item" $

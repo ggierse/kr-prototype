@@ -45,8 +45,8 @@ spec = do
               (threeChildren `isSpecializationOf`  childExactly1Constraint) `shouldBe` False
 
     describe "isSpecialization" $
-      context "one PrototypeExpression is a specialization of another if" $ do
+      context "one PrototypeDefinition is a specialization of another if" $ do
         it "all properties are a changeExpressionSpecialization" $
           True `shouldBe` False
-        it "should be false if PrototypeExpressions are not fixpoints" $
+        it "should be false if PrototypeDefinitions are not fixpoints" $
           True `shouldBe` False
