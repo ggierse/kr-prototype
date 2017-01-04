@@ -75,11 +75,9 @@ spec = do
 
 
 
-{--
     describe "isSpecialization" $
       context "one PrototypeDefinition is a specialization of another if" $ do
-        it "all properties are a changeExpressionSpecialization" $
-          True `shouldBe` False
-        it "should be false if PrototypeDefinitions are not fixpoints" $
-          True `shouldBe`
---}
+        it "all properties of the general are a changeExpressionSpecialization" $
+          (carWithComputerProto `isSpecializationOf` computerProtoG) `shouldBe` True
+      --  it "should be false if PrototypeDefinitions are not fixpoints" $
+        --  True `shouldBe` False

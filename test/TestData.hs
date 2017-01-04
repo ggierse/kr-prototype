@@ -56,8 +56,8 @@ vehicleProto :: PrototypeDefinition IRI
 vehicleProto = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty, remAll = Set.empty}
 bikeProto :: PrototypeDefinition IRI
 bikeProto = Proto {base=iriToBase vehicle, add=Set.fromList [changeWheelsToTwo], remove = Set.fromList [changeWheelsToFour], remAll = Set.empty}
-carProto :: PrototypeDefinition IRI
-carProto = Proto {base=iriToBase bike, add=Set.fromList [changeWheelsToFour], remove=Set.fromList [changeWheelsToTwo], remAll = Set.empty}
+carProtoDef :: PrototypeDefinition IRI
+carProtoDef = Proto {base=iriToBase bike, add=Set.fromList [changeWheelsToFour], remove=Set.fromList [changeWheelsToTwo], remAll = Set.empty}
 
 bikeFixpoint :: PrototypeDefinition IRI
 bikeFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToTwo], remove=Set.empty, remAll = Set.empty}
@@ -66,7 +66,7 @@ carFixpoint :: PrototypeDefinition IRI
 carFixpoint = Proto {base=P0, add=Set.fromList [changeWheelsToFour], remove=Set.empty, remAll = Set.empty}
 
 testKB :: KnowledgeBase IRI
-testKB = Map.fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProto)]
+testKB = Map.fromList [(vehicle, vehicleProto), (bike, bikeProto), (car, carProtoDef)]
 
 testKBFixed :: KnowledgeBase IRI
 testKBFixed = Map.fromList [(vehicle, vehicleProto), (bike, bikeFixpoint), (car, carFixpoint)]
@@ -88,6 +88,50 @@ mapTwoPropertiesOneEach = Map.fromList [(numWheels, fourSet), (hasName, Set.from
 
 getChangeExpression :: Property -> [Special.ComplexValue] -> ChangeExpression Special.ComplexValue
 getChangeExpression prop values = Change prop (Set.fromList values)
+
+getAddProtoDef :: (Ord a) => [ChangeExpression a] -> PrototypeDefinition a
+getAddProtoDef changes = Proto
+  { base = P0
+  , add = Set.fromList changes
+  , remove = Set.empty
+  , remAll = Set.empty}
+
+engineSize :: Property
+engineSize = Prop (ID "engineSize")
+hasWheels :: Property
+hasWheels = Prop (ID "hasWheels")
+
+carProtoG :: PrototypeDefinition Special.ComplexValue
+carProtoG =
+  getAddProtoDef
+    [ getChangeExpression hasWheels [Special.Const (Special.Atleast 3), Special.Const (Special.Atmost 5)]
+    , getChangeExpression engineSize [Special.Value (ID "8.5l")]]
+
+computer :: IRI
+computer = ID "example:computer"
+hasRam :: Property
+hasRam = Prop (ID "example:hasRam")
+hasCPU :: Property
+hasCPU = Prop (ID "example:hasCPU")
+
+computerProtoG :: PrototypeDefinition Special.ComplexValue
+computerProtoG =
+  getAddProtoDef
+  [ getChangeExpression hasRam [Special.Const (Special.Atleast 1)]
+  , getChangeExpression hasCPU [Special.Const (Special.Atleast 1)]
+  ]
+
+
+compcar :: IRI
+compcar = ID "example:compcar"
+carWithComputerProto :: PrototypeDefinition Special.ComplexValue
+carWithComputerProto =
+  getAddProtoDef
+  [ getChangeExpression hasWheels [Special.Value $ ID "wheelOne", Special.Value $ ID "wheelTwo", Special.Value $ ID "wheelThree", Special.Value $ ID "wheelFour"]
+  ,  getChangeExpression engineSize [Special.Value (ID "8.5l")]
+  ,  getChangeExpression hasRam [Special.Const $ Special.Atleast 2]
+  ,  getChangeExpression hasCPU [Special.Value $ ID "superCPU1", Special.Value $ ID "superCPU2"]
+  ]
 
 
 parent :: IRI
@@ -150,6 +194,8 @@ mixedAtMost2Iri3 = getChangeExpression hasChildren [Special.Const (Special.Atmos
 
 parentProto :: PrototypeDefinition Special.ComplexValue
 parentProto = Proto {base=P0, add=Set.singleton childLeast2Constraint, remove=Set.empty, remAll = Set.empty}
+
+
 
 {--
 familyKB :: Map.Map IRI (PrototypeDefinition Special.ComplexValue)

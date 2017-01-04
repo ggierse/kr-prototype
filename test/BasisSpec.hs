@@ -22,9 +22,9 @@ spec = do
       it "branch order is correct for one steps" $
         getBranchToP0 testKB bikeProto `shouldBe` [bikeProto, vehicleProto]
       it "P0 is two steps away" $
-        length (getBranchToP0 testKB carProto) `shouldBe` 3
+        length (getBranchToP0 testKB carProtoDef) `shouldBe` 3
       it "branch order is correct for two steps" $
-        getBranchToP0 testKB carProto `shouldBe` [carProto, bikeProto, vehicleProto]
+        getBranchToP0 testKB carProtoDef `shouldBe` [carProtoDef, bikeProto, vehicleProto]
 
     describe "removeProperty" $ do
       it "remove one iri of two" $
@@ -69,7 +69,7 @@ spec = do
       it "branch with one item" $
         branchToPrototype vehicle [vehicleProto] `shouldBe` PT {name=vehicle, properties=Map.fromList[(numWheels, fourSet)]}
       it "branch with two items" $
-        branchToPrototype car [carProto, bikeProto, vehicleProto] `shouldBe` PT {name=car, properties=Map.fromList[(numWheels, fourSet)]}
+        branchToPrototype car [carProtoDef, bikeProto, vehicleProto] `shouldBe` PT {name=car, properties=Map.fromList[(numWheels, fourSet)]}
 
     describe "computeFixpoint" $ do
       it "reduce to P0" $
