@@ -46,6 +46,16 @@ spec = do
                 `isSpecializationOf`
                 getChangeExpression hasChildren [Const (Atleast 4)])
               `shouldBe` True
+            describe "combined constraints and instances" $ do
+              it "atleast constraint alone should make it specialization" $
+                (mixedAtLeast3Iri1 `isSpecializationOf` childLeast2Constraint) `shouldBe` True
+              it "atmost is equal and one filler" $
+                (mixedAtMost2Iri1 `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
+              it "atmost is equal and maximal fillers" $
+                (mixedAtMost2Iri2 `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
+
+
+
           --it "the specialized fullfills a type restriction constraint" $
           --  True `shouldBe` False
           --it "the specialized fullfills an existance quantification constraint exposed by the generalization" $
@@ -60,6 +70,10 @@ spec = do
               (threeChildren `isSpecializationOf`  childAtmost2Constraint) `shouldBe` False
             it "exactly constraint" $
               (threeChildren `isSpecializationOf`  childExactly1Constraint) `shouldBe` False
+            it "exactly constraint cannot be specialized by constraint" $
+              (childExactly1Constraint `isSpecializationOf` childExactly2Constraint) `shouldBe` False
+
+
 
 {--
     describe "isSpecialization" $

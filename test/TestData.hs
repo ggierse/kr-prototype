@@ -134,6 +134,18 @@ childAtmost2Constraint :: ChangeExpression Special.ComplexValue
 childAtmost2Constraint = Change hasChildren (Set.singleton (Special.Const (Special.Atmost 2)))
 childExactly1Constraint :: ChangeExpression Special.ComplexValue
 childExactly1Constraint = Change hasChildren (Set.singleton (Special.Const (Special.Exactly 1)))
+childExactly2Constraint :: ChangeExpression Special.ComplexValue
+childExactly2Constraint = Change hasChildren (Set.singleton (Special.Const (Special.Exactly 2)))
+
+
+mixedAtLeast3Iri1 :: ChangeExpression Special.ComplexValue
+mixedAtLeast3Iri1 = getChangeExpression hasChildren [Special.Const (Special.Atleast 3), Special.Value frank]
+mixedAtMost2Iri1 :: ChangeExpression Special.ComplexValue
+mixedAtMost2Iri1 = getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank]
+mixedAtMost2Iri2 :: ChangeExpression Special.ComplexValue
+mixedAtMost2Iri2 = getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank, Special.Value tad]
+mixedAtMost2Iri3 :: ChangeExpression Special.ComplexValue
+mixedAtMost2Iri3 = getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank, Special.Value tad, Special.Value lars]
 
 
 parentProto :: PrototypeDefinition Special.ComplexValue
