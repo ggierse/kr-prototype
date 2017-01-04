@@ -4,7 +4,7 @@ import Prototype.Basis
 
 import qualified Data.Set as Set
 import Data.Maybe (isJust, fromJust)
-
+import Debug.Trace
 
 data Constraint = Exactly Int | Atleast Int | Atmost Int deriving (Show, Eq, Ord)
 data ComplexValue = Value IRI | Const Constraint deriving (Show, Eq, Ord)
@@ -53,6 +53,33 @@ instance Specializable (Set.Set IRI) Constraint where
   isSpecializationOf set (Atmost n) = Set.size set <= n
   isSpecializationOf set (Atleast n) = Set.size set >= n
 
+instance Specializable (Set.Set ComplexValue) Constraint where
+  isSpecializationOf set g =
+    let iri = getIris set `isSpecializationOf` g -- problem: in case that constraint - constraint, we cannot fullfil this here
+        consts = getConstraints set `isSpecializationOf` g
+    in consts `debug` ("const condition: " ++ show consts) || iri `debug` ("iri condition: " ++ show iri)
+
+instance Specializable (Set.Set Constraint) Constraint where
+  isSpecializationOf set g
+    | Set.size set == 0 = False
+    | otherwise = Set.foldl (\ prev s -> prev && s `isSpecializationOf` g) True set `debug` "going here"
+
+instance Specializable (Set.Set IRI) (Set.Set IRI) where
+  isSpecializationOf sSet gSet = gSet `Set.isSubsetOf` sSet
+
+instance Specializable (Set.Set ComplexValue) (Set.Set ComplexValue) where
+  isSpecializationOf sSet gSet =
+    let res = Set.foldl (compareSpecs sSet) True (getConstraints gSet)
+    in res
+    `debug` ("fold in complex results in "++show res)
+    && getIris sSet `isSpecializationOf` getIris gSet
+    --Set.foldl (\ prev g -> prev && (getIris sSet) `isSpecializationOf` g) True (getIris gSet)
+  -- für alle number constraints muss es erfüllt sein (iris), kann aber auch nur weitere einschränkung geben
+  -- für alle iris muss es genaue entsprechung geben
+compareSpecs :: Set.Set ComplexValue -> Bool -> Constraint -> Bool
+compareSpecs sSet prev g = (prev && (sSet `isSpecializationOf` g)) `debug` ("comparing " ++ show sSet ++ " with " ++ show g)
+
+
 getIris :: Set.Set ComplexValue -> Set.Set IRI
 getIris complexSet =
   let maybeIris = Set.map getIRI complexSet
@@ -74,17 +101,20 @@ instance Specializable SimpleChangeExpression SimpleChangeExpression where
 
 instance Specializable (ChangeExpression ComplexValue) (ChangeExpression ComplexValue) where
   isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
-    | propS /= propG = False
-    | general == special = True
-    | propSetS `Set.isSubsetOf` propSetG = True
-    | evaluateConstraints (getConstraints propSetG) (getIris propSetS) = True
-    | otherwise = False
+    | propS /= propG = False `debug` "not the same property"
+    | general == special = True `debug` "exactly the same change set"
+    | propSetS `Set.isSubsetOf` propSetG = True `debug` "subset"
+    | propSetS `isSpecializationOf` propSetG = True `debug` "specialization"
+    | otherwise = False `debug` ("otherwise case, propSetS: " ++ show propSetS ++ " propSetG: " ++ show propSetG)
 
-
+debug = flip trace
 
 evaluateConstraints :: Set.Set Constraint -> Set.Set IRI -> Bool
+{--
+evaluateConstraints :: Set.Set ComplexValue -> Set.Set IRI -> Bool
 evaluateConstraints constraints iris =
   Set.foldl (\ prev x -> prev && (iris `isSpecializationOf` x)) True constraints
+  --}
 
     {-- für alle properties der generalization muss gelten
      ach warte das ist komisch für nur eine change expression.
