@@ -20,8 +20,6 @@ import qualified Data.Set as Set
 import qualified Data.List as List
 import GHC.Generics
 
-type Set = Set.Set
-
 data IRI = ID String deriving (Show, Eq, Ord, Generic)
 data Property = Prop IRI deriving (Show, Eq, Ord, Generic)
 type PropertyMap propValueType = Map.Map Property (Set.Set propValueType)
@@ -56,6 +54,9 @@ iriToBase = Base
 baseToIri :: Bases -> Maybe IRI
 baseToIri P0 = Nothing
 baseToIri (Base iri) = Just iri
+
+changeExpressionNameIsEqual :: ChangeExpression a -> ChangeExpression b -> Bool
+changeExpressionNameIsEqual (Change nameA _) (Change nameB _) = nameA == nameB
 
 isFixPoint :: PrototypeDefinition a -> Bool
 isFixPoint Proto {base=P0, add=_, remove = rem1, remAll = rem2}

@@ -9,6 +9,17 @@ import Debug.Trace
 data Constraint = Exactly Int | Atleast Int | Atmost Int deriving (Show, Eq, Ord)
 data ComplexValue = Value IRI | Const Constraint deriving (Show, Eq, Ord)
 
+
+protoDefIriToComplex :: PrototypeDefinition IRI -> PrototypeDefinition ComplexValue
+protoDefIriToComplex Proto {base=b, add=a, remove=r, remAll=r2} =
+  Proto{base=b, add=simpleChangeSetToComplex a, remove=simpleChangeSetToComplex r, remAll=r2}
+
+simpleChangeSetToComplex :: Set.Set SimpleChangeExpression -> Set.Set (ChangeExpression ComplexValue)
+simpleChangeSetToComplex = Set.map simpleChangeToComplex
+
+simpleChangeToComplex :: SimpleChangeExpression -> ChangeExpression ComplexValue
+simpleChangeToComplex (Change prop values) = Change prop (Set.map Value values)
+
 type ConstraintView = Maybe Constraint
 
 
