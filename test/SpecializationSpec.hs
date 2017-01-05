@@ -46,7 +46,7 @@ spec = do
                 `isSpecializationOf`
                 getChangeExpression hasChildren [Const (Atleast 4)])
               `shouldBe` True
-            describe "combined constraints and instances" $ do
+            context "combined constraints and instances" $ do
               it "atleast constraint alone should make it specialization" $
                 (mixedAtLeast3Iri1 `isSpecializationOf` childLeast2Constraint) `shouldBe` True
               it "atmost is equal and one filler" $
@@ -75,9 +75,15 @@ spec = do
 
 
 
-    describe "isSpecialization" $
+    describe "isSpecialization" $ do
       context "one PrototypeDefinition is a specialization of another if" $ do
         it "all properties of the general are a changeExpressionSpecialization" $
           (carWithComputerProto `isSpecializationOf` computerProtoG) `shouldBe` True
-      --  it "should be false if PrototypeDefinitions are not fixpoints" $
-        --  True `shouldBe` False
+        it "a PrototypeDefinition can be a specialization of multiple generals" $
+          ((carWithComputerProto `isSpecializationOf` computerProtoG) &&
+          (carWithComputerProto `isSpecializationOf` carProtoG)) `shouldBe` True
+      context "one PrototypeDefintion is not a specialization of another if" $ do
+        it "if the PrototypeDefinition of the special is not a fixpoint" $
+          (protoDefIriToComplex protoUnfixed `isSpecializationOf` protoDefIriToComplex fixpointProto) `shouldBe` False
+        it "if the PrototypeDefinition of the general is not a fixpoint" $
+          (protoDefIriToComplex fixpointProto `isSpecializationOf` protoDefIriToComplex protoUnfixed) `shouldBe` False

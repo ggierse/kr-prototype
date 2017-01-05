@@ -3,6 +3,7 @@ module Prototype.Specialization where
 import Prototype.Basis
 
 import qualified Data.Set as Set
+import qualified Data.List as List
 import Data.Maybe (isJust, fromJust)
 import Debug.Trace
 
@@ -118,6 +119,18 @@ instance Specializable (ChangeExpression ComplexValue) (ChangeExpression Complex
     | propSetS `isSpecializationOf` propSetG = True `debug` "specialization"
     | otherwise = False `debug` ("otherwise case, propSetS: " ++ show propSetS ++ " propSetG: " ++ show propSetG)
 
+instance Specializable (PrototypeDefinition ComplexValue) (PrototypeDefinition ComplexValue) where
+  isSpecializationOf special@Proto {base=_, add=addS, remove=_, remAll=_} general@Proto {base=_, add=addG, remove=_, remAll=_}
+    | not $ isFixPoint special = False
+    | not $ isFixPoint general = False
+    | otherwise = Set.foldr (\ g prev -> prev && (addS `isSpecializationOf` g)) True addG
+
+instance Specializable (Set.Set (ChangeExpression ComplexValue)) (ChangeExpression ComplexValue) where
+  isSpecializationOf specials general =
+    let sameName = List.find (changeExpressionNameIsEqual general) $ Set.toList specials
+    in case sameName of
+      Nothing -> False
+      Just special -> special `isSpecializationOf` general
 debug = flip trace
 
 evaluateConstraints :: Set.Set Constraint -> Set.Set IRI -> Bool
