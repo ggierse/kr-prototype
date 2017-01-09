@@ -55,7 +55,10 @@ instance Specializable (PrototypeDefinition ComplexValue) (PrototypeDefinition C
   isSpecializationOf special@Proto {base=_, add=addS, remove=_, remAll=_} general@Proto {base=_, add=addG, remove=_, remAll=_}
     | not $ isFixPoint special = False
     | not $ isFixPoint general = False
-    | otherwise = Set.foldr (\ g prev -> prev && (addS `isSpecializationOf` g)) True addG
+    | otherwise = foldSpecialization addS addG--Set.foldr (\ g prev -> prev && (addS `isSpecializationOf` g)) True addG
+
+foldSpecialization :: (Specializable a b) => a -> Set.Set b -> Bool
+foldSpecialization special = Set.foldl' (\ prev g -> prev && (special `isSpecializationOf` g)) True
 
 instance Specializable (Set.Set (ChangeExpression ComplexValue)) (ChangeExpression ComplexValue) where
   isSpecializationOf specials general =
@@ -74,7 +77,7 @@ instance Specializable (ChangeExpression ComplexValue) (ChangeExpression Complex
 
 instance Specializable (Set.Set ComplexValue) (Set.Set ComplexValue) where
   isSpecializationOf sSet gSet =
-    let res = Set.foldl (compareSpecs sSet) True (getConstraints gSet)
+    let res = foldSpecialization sSet (getConstraints gSet)
     in res
     `debug` ("fold in complex results in "++show res)
     && getIris sSet `isSpecializationOf` getIris gSet
@@ -99,7 +102,7 @@ instance Specializable (Set.Set IRI) Constraint where
 instance Specializable (Set.Set Constraint) Constraint where
   isSpecializationOf set g
     | Set.size set == 0 = False
-    | otherwise = Set.foldl (\ prev s -> prev && s `isSpecializationOf` g) True set
+    | otherwise = Set.foldl' (\ prev s -> prev && s `isSpecializationOf` g) True set
 
 instance Specializable Constraint Constraint where
   isSpecializationOf (Exactly s) (Exactly g) = s == g

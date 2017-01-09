@@ -21,7 +21,8 @@ executable Prototype
     default-extensions:
       ViewPatterns,
       MultiParamTypeClasses,
-      FlexibleInstances
+      FlexibleInstances,
+      FlexibleContexts
     other-modules:
       Prototype.Basis,
       Prototype.Specialization,
@@ -53,7 +54,8 @@ test-suite spec
     default-extensions:
       ViewPatterns,
       MultiParamTypeClasses,
-      FlexibleInstances
+      FlexibleInstances,
+      FlexibleContexts
     hs-source-dirs: test src
     ghc-options: -Wall
     other-modules:
