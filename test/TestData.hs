@@ -85,10 +85,6 @@ mapTwoPropertiesOneEach = Map.fromList [(numWheels, fourSet), (hasName, Set.from
 
 
 
-
-getChangeExpression :: Property -> [Special.ComplexValue] -> ChangeExpression Special.ComplexValue
-getChangeExpression prop values = Change prop (Set.fromList values)
-
 getAddProtoDef :: (Ord a) => [ChangeExpression a] -> PrototypeDefinition a
 getAddProtoDef changes = Proto
   { base = P0
@@ -104,8 +100,8 @@ hasWheels = Prop (ID "hasWheels")
 carProtoG :: PrototypeDefinition Special.ComplexValue
 carProtoG =
   getAddProtoDef
-    [ getChangeExpression hasWheels [Special.Const (Special.Atleast 3), Special.Const (Special.Atmost 5)]
-    , getChangeExpression engineSize [Special.Value (ID "8.5l")]]
+    [ Special.getChangeExpression hasWheels [Special.Const (Special.Atleast 3), Special.Const (Special.Atmost 5)]
+    , Special.getChangeExpression engineSize [Special.Value (ID "8.5l")]]
 
 computer :: IRI
 computer = ID "example:computer"
@@ -117,8 +113,8 @@ hasCPU = Prop (ID "example:hasCPU")
 computerProtoG :: PrototypeDefinition Special.ComplexValue
 computerProtoG =
   getAddProtoDef
-  [ getChangeExpression hasRam [Special.Const (Special.Atleast 1)]
-  , getChangeExpression hasCPU [Special.Const (Special.Atleast 1)]
+  [ Special.getChangeExpression hasRam [Special.Const (Special.Atleast 1)]
+  , Special.getChangeExpression hasCPU [Special.Const (Special.Atleast 1)]
   ]
 
 
@@ -127,10 +123,10 @@ compcar = ID "example:compcar"
 carWithComputerProto :: PrototypeDefinition Special.ComplexValue
 carWithComputerProto =
   getAddProtoDef
-  [ getChangeExpression hasWheels [Special.Value $ ID "wheelOne", Special.Value $ ID "wheelTwo", Special.Value $ ID "wheelThree", Special.Value $ ID "wheelFour"]
-  ,  getChangeExpression engineSize [Special.Value (ID "8.5l")]
-  ,  getChangeExpression hasRam [Special.Const $ Special.Atleast 2]
-  ,  getChangeExpression hasCPU [Special.Value $ ID "superCPU1", Special.Value $ ID "superCPU2"]
+  [ Special.getChangeExpression hasWheels [Special.Value $ ID "wheelOne", Special.Value $ ID "wheelTwo", Special.Value $ ID "wheelThree", Special.Value $ ID "wheelFour"]
+  ,  Special.getChangeExpression engineSize [Special.Value (ID "8.5l")]
+  ,  Special.getChangeExpression hasRam [Special.Const $ Special.Atleast 2]
+  ,  Special.getChangeExpression hasCPU [Special.Value $ ID "superCPU1", Special.Value $ ID "superCPU2"]
   ]
 
 
@@ -183,13 +179,13 @@ childExactly2Constraint = Change hasChildren (Set.singleton (Special.Const (Spec
 
 
 mixedAtLeast3Iri1 :: ChangeExpression Special.ComplexValue
-mixedAtLeast3Iri1 = getChangeExpression hasChildren [Special.Const (Special.Atleast 3), Special.Value frank]
+mixedAtLeast3Iri1 = Special.getChangeExpression hasChildren [Special.Const (Special.Atleast 3), Special.Value frank]
 mixedAtMost2Iri1 :: ChangeExpression Special.ComplexValue
-mixedAtMost2Iri1 = getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank]
+mixedAtMost2Iri1 = Special.getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank]
 mixedAtMost2Iri2 :: ChangeExpression Special.ComplexValue
-mixedAtMost2Iri2 = getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank, Special.Value tad]
+mixedAtMost2Iri2 = Special.getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank, Special.Value tad]
 mixedAtMost2Iri3 :: ChangeExpression Special.ComplexValue
-mixedAtMost2Iri3 = getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank, Special.Value tad, Special.Value lars]
+mixedAtMost2Iri3 = Special.getChangeExpression hasChildren [Special.Const (Special.Atmost 2), Special.Value frank, Special.Value tad, Special.Value lars]
 
 
 parentProto :: PrototypeDefinition Special.ComplexValue
