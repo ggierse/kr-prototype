@@ -69,30 +69,23 @@ instance Specializable (Set.Set (ChangeExpression ComplexValue)) (ChangeExpressi
 
 instance Specializable (ChangeExpression ComplexValue) (ChangeExpression ComplexValue) where
   isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
-    | propS /= propG = False `debug` "not the same property"
-    | general == special = True `debug` "exactly the same change set"
-    | propSetS `Set.isSubsetOf` propSetG = True `debug` "subset"
-    | propSetS `isSpecializationOf` propSetG = True `debug` "specialization"
-    | otherwise = False `debug` ("otherwise case, propSetS: " ++ show propSetS ++ " propSetG: " ++ show propSetG)
+    | propS /= propG = False --`debug` "not the same property"
+    | general == special = True --`debug` "exactly the same change set"
+    | propSetS `Set.isSubsetOf` propSetG = True --`debug` "subset"
+    | propSetS `isSpecializationOf` propSetG = True --`debug` "specialization"
+    | otherwise = False --`debug` ("otherwise case, propSetS: " ++ show propSetS ++ " propSetG: " ++ show propSetG)
 
 instance Specializable (Set.Set ComplexValue) (Set.Set ComplexValue) where
   isSpecializationOf sSet gSet =
-    let res = foldSpecialization sSet (getConstraints gSet)
-    in res
-    `debug` ("fold in complex results in "++show res)
-    && getIris sSet `isSpecializationOf` getIris gSet
-
-compareSpecs :: Set.Set ComplexValue -> Bool -> Constraint -> Bool
-compareSpecs sSet prev g = (prev && (sSet `isSpecializationOf` g)) `debug` ("comparing " ++ show sSet ++ " with " ++ show g)
+    sSetisSpecialOfEachgSet && getIris sSet `isSpecializationOf` getIris gSet
+      where sSetisSpecialOfEachgSet = foldSpecialization sSet (getConstraints gSet)
 
 instance Specializable (Set.Set IRI) (Set.Set IRI) where
   isSpecializationOf sSet gSet = gSet `Set.isSubsetOf` sSet
 
 instance Specializable (Set.Set ComplexValue) Constraint where
   isSpecializationOf set g =
-    let iri = getIris set `isSpecializationOf` g
-        consts = getConstraints set `isSpecializationOf` g
-    in consts `debug` ("const condition: " ++ show consts) || iri `debug` ("iri condition: " ++ show iri)
+    getConstraints set `isSpecializationOf` g || getIris set `isSpecializationOf` g
 
 instance Specializable (Set.Set IRI) Constraint where
   isSpecializationOf set (Exactly n) = Set.size set == n
@@ -109,7 +102,6 @@ instance Specializable Constraint Constraint where
   isSpecializationOf (Atleast s) (Atleast g) = s >= g
   isSpecializationOf (Atmost s) (Atmost g) = s <= g
   isSpecializationOf _ _ = False
-
 
 instance Specializable SimpleChangeExpression SimpleChangeExpression where
   isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
