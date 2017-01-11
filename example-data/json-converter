@@ -1,0 +1,59 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+from __future__ import print_function
+
+import argparse
+import json
+
+def _parser():
+	parser = argparse.ArgumentParser()
+
+	parser.add_argument("-j", "--java-json", default=None, required=False, type=file, help="Java json file format")
+	parser.add_argument("-o", "--output-file", default=None, required=False, type=str, help="Write result to output file")
+
+	parser.add_argument("-d", "--debug", default=False, action="store_true", help="Print a bit of debug output")
+
+	return parser
+
+def main():
+	parser = _parser()
+	args = parser.parse_args()
+
+	if args.java_json:
+		js = json.load(args.java_json)
+		if args.debug:
+			print("JSON file loaded:")
+			print(js)
+			print()
+
+		def fixobj(obj):
+			# fix add, rem and remAll by converting dicts to list-tuples
+			for key in ("add", "rem", "remAll"):
+				if type(obj[key]) == dict:
+					obj[key] = obj[key].items()
+
+			# fix base
+			if obj["base"] == "proto:P_0":
+				obj["base"] = {"tag": "P0"}
+			else:
+				obj["base"] = {"tag": "Base", "contents": obj["base"]}
+
+			return obj
+
+		newObjL = map(fixobj, js)
+
+		# output result
+		if args.output_file:
+			with open(args.output_file, "w") as f:
+				json.dump(newObjL, f)
+				f.write("\n")
+		else:
+			if args.debug:
+				print("JSON file generated:")
+			print(json.dumps(newObjL))
+	else:
+		parser.error("No action specified")
+
+
+if __name__ == '__main__':
+	main()
