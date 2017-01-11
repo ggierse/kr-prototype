@@ -1,7 +1,9 @@
 module GeneratorSpec (spec) where
 import Prototype.Basis
 import Prototype.Generator
+import qualified Prototype.Serialization as PSerial
 import Test.Hspec
+import Data.Foldable
 
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
@@ -37,10 +39,23 @@ spec = do
 
 
   describe "generateBaseline" $ do
+    context "size is correct" $ do
       it "generate for n=0" $
-        Map.size (generateBaseline 0) `shouldBe` 3
+        Map.size (generateBaseline 0) `shouldBe` 1
       it "generate for n=1" $
-        Map.size (generateBaseline 1) `shouldBe` 3+2^2
+        Map.size (generateBaseline 1) `shouldBe` 3
       it "generate for n=2" $
-        Map.size (generateBaseline 2) `shouldBe` 3+2^2+2^3
+        Map.size (generateBaseline 2) `shouldBe` 3+2^(2 :: Int)
+    context "result is equal to example from java code" $
+      forM_ [1,2,3,5] (compareJsonWithHaskell generateBaseline "baseline")
+
+
+compareJsonWithHaskell :: (Int -> KnowledgeBase IRI) -> String -> Int -> SpecWith ()
+compareJsonWithHaskell haskellGeneration kind n = it (kind++", n="++show n) $ PSerial.readKB (getJsonFileName kind n) `shouldReturn` haskellGeneration n
+
+
+getJsonFileName :: String -> Int -> String
+getJsonFileName kind n = "/home/gesche/coding/master-code/example-data/"++kind++"-"++show n++"-new.json"
+
+
       -- TODO: can i do that with quickcheck?

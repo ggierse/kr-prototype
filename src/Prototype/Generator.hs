@@ -7,7 +7,6 @@ import Prototype.Basis
 import qualified Data.Bits as Bits
 import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
-import qualified Data.List as List
 
 generateBaseId :: Int -> IRI
 generateBaseId n = ID ("http://www.example.com#object" ++ show n)
@@ -43,7 +42,7 @@ genProtoWithOneProp s p o =
 generateBaseline :: Int -> KnowledgeBase IRI
 generateBaseline n =
   let first =  (generateComplexId 0 0, generateSimplePrototypeDefinition P0)
-      layers = [1..(n+1)]
+      layers = [1..n]
   --in Map.insert ident first $ Map.unions $ generateAllLayers layers
   --in List.foldr (\ prev (key,value) -> Map.insert key value prev ) first (generateAllLayers layers)
   -- [Map IRI KnowledgeBase] -> Map IRI KnowledgeBase
