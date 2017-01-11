@@ -8,6 +8,10 @@ import qualified Data.Bits as Bits
 import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
 
+import Control.Monad
+import Test.QuickCheck
+import System.IO
+
 generateBaseId :: Int -> IRI
 generateBaseId n = ID ("http://www.example.com#object" ++ show n)
 
@@ -23,7 +27,7 @@ generateSimplePrototypeDefinition b =
       remAll = Set.empty
     }
 
-genProtoWithOneProp :: Bases -> Property -> IRI -> PrototypeDefinition IRI
+genProtoWithOneProp :: Bases -> Prototype.Basis.Property -> IRI -> PrototypeDefinition IRI
 genProtoWithOneProp s p o =
   Proto {
       base = s,
@@ -78,6 +82,40 @@ generateBlocks n =
 
 generateBlockLayers :: [Int] -> [(IRI, PrototypeDefinition IRI)]
 generateBlockLayers layers = []
+
+
+{-- TODO continue here
+generateBlockLayer :: Int -> Int -> Gen [(IRI, PrototypeDefinition IRI)]
+generateBlockLayer layer numBlocks = do
+  let numElems = [1..numBlocks]
+  elems <- map (\ j -> generateBlockChild layer j numBlocks) numElems
+  return
+  --}
+
+generateBlockChild :: Int -> Int -> Int -> Gen (IRI, PrototypeDefinition IRI)
+generateBlockChild i j numBlocks = do
+  protodef <- generateBlockPrototypeDefinition i j numBlocks
+  return (generateComplexId i j, protodef)
+
+generateBlockPrototypeDefinition :: Int -> Int -> Int -> Gen (PrototypeDefinition IRI)
+generateBlockPrototypeDefinition i j numBlocks = do
+  base <- generateBlockBase i numBlocks
+  add <- generateChangeForBlock i numBlocks
+  return $ Proto base (Set.singleton add) Set.empty Set.empty
+
+generateChangeForBlock :: Int -> Int -> Gen SimpleChangeExpression
+generateChangeForBlock i numBlocks = do
+  value <- genIriFromAboveBlock i numBlocks
+  return $ Change (Prop $ ID "http://www.example.com#knows") (Set.singleton value)
+
+generateBlockBase :: Int -> Int -> Gen Bases
+generateBlockBase layer numBlocks = fmap Base (genIriFromAboveBlock layer numBlocks)
+--  block = liftM Base (liftM (generateComplexId 1) (choose (0, 10)))
+
+genIriFromAboveBlock :: Int -> Int -> Gen IRI
+genIriFromAboveBlock i numBlocks = fmap (generateComplexId (i-1)) (choose (0, numBlocks))
+
+-- use "sample'" to obtain sample, unfortunatly makes it IO
 
 {--
 generateBlockLayerItem :: Int -> Int -> Int -> (IRI, PrototypeDefinition IRI)
