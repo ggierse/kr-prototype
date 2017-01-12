@@ -65,6 +65,7 @@ generateBaselineChild i j =
   let basis = Base (generateComplexId (i-1) (Bits.shift j (-1)))
   in (generateComplexId i j, generateSimplePrototypeDefinition basis)
 
+
 {-- Generates a synthetic prototype KB. Creates n blocks of 100,000
   * prototypes. All prototypes in each block derive from a randomly chosen
   * prototype in a lower block. Then, each of the prototypes has a property
@@ -72,30 +73,27 @@ generateBaselineChild i j =
   * the base is always P_0 and the value for the property is always the same
   * fixed prototype.
 --}
-generateBlocks :: Int -> KnowledgeBase IRI
-generateBlocks n =
-  let numberPerLayer = 100000
-      firstValue = generateComplexId 0 0
-      property = Prop (ID "http://www.example.com#knows")
-      baseLayer = idListToProtos firstValue [1..numberPerLayer]
-  in Map.empty
+generateBlocks :: Int -> Gen [(IRI, PrototypeDefinition IRI)]
+generateBlocks = generateAllBlockLayers 100000
 
-generateBlockLayers :: [Int] -> [(IRI, PrototypeDefinition IRI)]
-generateBlockLayers layers = []
+generateAllBlockLayers :: Int -> Int -> Gen [(IRI, PrototypeDefinition IRI)]
+generateAllBlockLayers numBlocks layers = vectorOfWithLoopNum layers (++) (generateBlockLayer numBlocks)
 
-
-{-- TODO continue here
 generateBlockLayer :: Int -> Int -> Gen [(IRI, PrototypeDefinition IRI)]
-generateBlockLayer layer numBlocks = do
-  let numElems = [1..numBlocks]
-  elems <- map (\ j -> generateBlockChild layer j numBlocks) numElems
-  return
-  --}
+generateBlockLayer numBlocks layer = vectorOfWithLoopNum numBlocks (:) (generateBlockChild layer numBlocks)
+
+-- calls f with the number of the current loop as first argument
+vectorOfWithLoopNum cnt0 conc f =
+  loop cnt0
+  where
+    loop cnt
+      | cnt < 0 = pure []
+      | otherwise = liftM2 conc (f cnt) (loop (cnt - 1))
 
 generateBlockChild :: Int -> Int -> Int -> Gen (IRI, PrototypeDefinition IRI)
-generateBlockChild i j numBlocks = do
-  protodef <- generateBlockPrototypeDefinition i j numBlocks
-  return (generateComplexId i j, protodef)
+generateBlockChild layer numBlocks j  = do
+  protodef <- generateBlockPrototypeDefinition layer j numBlocks
+  return (generateComplexId layer j, protodef)
 
 generateBlockPrototypeDefinition :: Int -> Int -> Int -> Gen (PrototypeDefinition IRI)
 generateBlockPrototypeDefinition i j numBlocks = do
@@ -109,10 +107,11 @@ generateChangeForBlock i numBlocks = do
   return $ Change (Prop $ ID "http://www.example.com#knows") (Set.singleton value)
 
 generateBlockBase :: Int -> Int -> Gen Bases
+generateBlockBase 0 _ = return P0
 generateBlockBase layer numBlocks = fmap Base (genIriFromAboveBlock layer numBlocks)
---  block = liftM Base (liftM (generateComplexId 1) (choose (0, 10)))
 
 genIriFromAboveBlock :: Int -> Int -> Gen IRI
+genIriFromAboveBlock 0 _ = return (generateComplexId 0 0)
 genIriFromAboveBlock i numBlocks = fmap (generateComplexId (i-1)) (choose (0, numBlocks))
 
 -- use "sample'" to obtain sample, unfortunatly makes it IO
