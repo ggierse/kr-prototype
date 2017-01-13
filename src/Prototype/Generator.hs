@@ -10,7 +10,6 @@ import qualified Data.Map.Strict as Map
 
 import Control.Monad
 import Test.QuickCheck
-import System.IO
 
 generateBaseId :: Int -> IRI
 generateBaseId n = ID ("http://www.example.com#object" ++ show n)
@@ -83,6 +82,7 @@ generateBlockLayer :: Int -> Int -> Gen [(IRI, PrototypeDefinition IRI)]
 generateBlockLayer numBlocks layer = vectorOfWithLoopNum numBlocks (:) (generateBlockChild layer numBlocks)
 
 -- calls f with the number of the current loop as first argument
+vectorOfWithLoopNum :: (Monad f, Num a, Ord a) => a -> (a1 -> [t] -> [t]) -> (a -> f a1) -> f [t]
 vectorOfWithLoopNum cnt0 conc f =
   loop cnt0
   where
@@ -92,14 +92,14 @@ vectorOfWithLoopNum cnt0 conc f =
 
 generateBlockChild :: Int -> Int -> Int -> Gen (IRI, PrototypeDefinition IRI)
 generateBlockChild layer numBlocks j  = do
-  protodef <- generateBlockPrototypeDefinition layer j numBlocks
+  protodef <- generateBlockPrototypeDefinition layer numBlocks
   return (generateComplexId layer j, protodef)
 
-generateBlockPrototypeDefinition :: Int -> Int -> Int -> Gen (PrototypeDefinition IRI)
-generateBlockPrototypeDefinition i j numBlocks = do
-  base <- generateBlockBase i numBlocks
-  add <- generateChangeForBlock i numBlocks
-  return $ Proto base (Set.singleton add) Set.empty Set.empty
+generateBlockPrototypeDefinition :: Int -> Int -> Gen (PrototypeDefinition IRI)
+generateBlockPrototypeDefinition i numBlocks = do
+  baseB <- generateBlockBase i numBlocks
+  addB <- generateChangeForBlock i numBlocks
+  return $ Proto baseB (Set.singleton addB) Set.empty Set.empty
 
 generateChangeForBlock :: Int -> Int -> Gen SimpleChangeExpression
 generateChangeForBlock i numBlocks = do
@@ -117,21 +117,74 @@ genIriFromAboveBlock i numBlocks = fmap (generateComplexId (i-1)) (choose (0, nu
 -- use "sample'" to obtain sample, unfortunatly makes it IO
 
 {--
-generateBlockLayerItem :: Int -> Int -> Int -> (IRI, PrototypeDefinition IRI)
-generateBlockLayerItem i j numberPerLayer =
-  let parentnum = Quick.choose (0,numberPerLayer)
-      base = generateComplexId (i-1)
-  in (ID "", generateSimplePrototypeDefinition (Base (ID "")))
+example_generator = create_block_file ("blockgentest", 10, block)
 
+
+create_block_file (fname, count, gens) =
+  do
+    test_blocks <- sample' gens
+    writeToFile fname (show test_blocks)
+    where
+      mkDataDef gen_name = liftM BlockLayerBaseDef gen_name
+
+writeToFile name n x = do
+  h <- openFile (name ++ "_" ++ n) WriteMode
+  hPutStrLn h $ show x
+  hClose h
+  --}
+
+{--
+   * Generates a synthetic prototype KB. The KB is constructed by adding
+   * amount prototypes to the KB, one at a time. Each prototype gets a
+   * randomly selected earlier created one as its base. Furthermore, each
+   * prototype gets between 0 and 4 properties chosen from 10 distinct ones
+   * (with replacement). The value of each property is chosen randomly among
+   * the prototypes.
 --}
+generateIncremental :: Int -> Gen [(IRI, PrototypeDefinition IRI)]
+generateIncremental n = vectorOfWithLoopNum n (:) generateIncrementalChild
 
+generateIncrementalChild :: Int -> Gen (IRI, PrototypeDefinition IRI)
+generateIncrementalChild 0 = return (generateBaseId 0, generateSimplePrototypeDefinition P0)
+generateIncrementalChild n = do
+  parentId <- choose (0, n-1)
+  let cbase = Base $ generateBaseId parentId
+  numProps <- choose (0, maxProperties-1)
+  cadd <- vectorOf numProps (generateSimpleChange n)
+  return (generateBaseId n, createIncrementalProtoDef cbase $ removeDublicateProps cadd)
+
+maxProperties :: Int
+maxProperties = 5
+
+generateSimpleChange :: Int -> Gen SimpleChangeExpression
+generateSimpleChange n = do
+  propertyId <- choose (0, n-1)
+  propVal <- choose(0, distinctProperties-1)
+  return (Change (Prop $ getPropertyIriN propertyId) (Set.singleton (generateBaseId propVal)))
+
+removeDublicateProps :: [SimpleChangeExpression] -> [SimpleChangeExpression]
+removeDublicateProps = foldl (\seen x -> if x `occursWithSameName` seen
+                                      then seen
+                                      else seen ++ [x]) []
+
+occursWithSameName :: SimpleChangeExpression -> [SimpleChangeExpression] -> Bool
+occursWithSameName (Change n _) xs = foldl (\ prev n2 -> prev || n == n2) False $ map (\ (Change pName _) -> pName) xs
+
+distinctProperties :: Int
+distinctProperties = 10
+
+getPropertyIriN :: Int -> IRI
+getPropertyIriN n = ID $ "http://www.example.com#knows"++show n
+
+createIncrementalProtoDef :: Bases -> [SimpleChangeExpression] -> PrototypeDefinition IRI
+createIncrementalProtoDef baseI addI = Proto baseI (Set.fromList addI) Set.empty Set.empty
 
 idListToProtos :: IRI -> [Int] -> [(IRI, PrototypeDefinition IRI)]
 idListToProtos propVal = map (genProto propVal 0)
 
 genProto :: IRI -> Int -> Int -> (IRI, PrototypeDefinition IRI)
 genProto propVal i j  =
-  let property = Prop (ID "http://www.example.com#knows")
+  let prop = Prop (ID "http://www.example.com#knows")
   in
   (generateBaseId i,
-  genProtoWithOneProp  (iriToBase $ generateComplexId i j) property propVal)
+  genProtoWithOneProp  (iriToBase $ generateComplexId i j) prop propVal)
