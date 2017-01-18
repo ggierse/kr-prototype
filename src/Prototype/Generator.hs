@@ -6,7 +6,6 @@ import Prototype.Basis
 
 import qualified Data.Bits as Bits
 import qualified Data.Set as Set
-import qualified Data.Map.Strict as Map
 
 import Control.Monad
 import Test.QuickCheck
@@ -17,18 +16,20 @@ generateBaseId n = ID ("http://www.example.com#object" ++ show n)
 generateComplexId :: Int -> Int -> IRI
 generateComplexId parent child = ID ("http://www.example.com#object"++ show parent++"_"++ show child)
 
-generateSimplePrototypeDefinition :: Bases -> PrototypeDefinition IRI
-generateSimplePrototypeDefinition b =
+generateSimplePrototypeDefinition :: IRI -> Bases -> PrototypeExpression IRI
+generateSimplePrototypeDefinition identifier b =
   Proto {
+      idIri = identifier,
       base = b,
       add = Set.empty,
       remove = Set.empty,
       remAll = Set.empty
     }
 
-genProtoWithOneProp :: Bases -> Prototype.Basis.Property -> IRI -> PrototypeDefinition IRI
-genProtoWithOneProp s p o =
+genProtoWithOneProp :: IRI -> Bases -> Prototype.Basis.Property -> IRI -> PrototypeExpression IRI
+genProtoWithOneProp ident s p o =
   Proto {
+      idIri = ident,
       base = s,
       add = Set.singleton (Change p (Set.singleton o)),
       remove = Set.empty,
@@ -44,25 +45,24 @@ genProtoWithOneProp s p o =
 --}
 generateBaseline :: Int -> KnowledgeBase IRI
 generateBaseline n =
-  let first =  (generateComplexId 0 0, generateSimplePrototypeDefinition P0)
+  let firstId = generateComplexId 0 0
+      first = generateSimplePrototypeDefinition firstId P0
       layers = [1..n]
-  --in Map.insert ident first $ Map.unions $ generateAllLayers layers
-  --in List.foldr (\ prev (key,value) -> Map.insert key value prev ) first (generateAllLayers layers)
-  -- [Map IRI KnowledgeBase] -> Map IRI KnowledgeBase
-  in Map.fromList (first : generateAllLayers layers)
+  in generateKBfromPrototypeExps (first : generateAllLayers layers)
 
-generateAllLayers :: [Int] -> [(IRI, PrototypeDefinition IRI)]
+generateAllLayers :: [Int] -> [PrototypeExpression IRI]
 generateAllLayers = concatMap generateBaselineLayer
 
-generateBaselineLayer :: Int -> [(IRI, PrototypeDefinition IRI)]
+generateBaselineLayer :: Int -> [PrototypeExpression IRI]
 generateBaselineLayer i =
   let numChildren = [0..(2^i-1)]
   in map (generateBaselineChild i) numChildren
 
-generateBaselineChild :: Int -> Int -> (IRI, PrototypeDefinition IRI)
+generateBaselineChild :: Int -> Int -> PrototypeExpression IRI
 generateBaselineChild i j =
   let basis = Base (generateComplexId (i-1) (Bits.shift j (-1)))
-  in (generateComplexId i j, generateSimplePrototypeDefinition basis)
+      ident = generateComplexId i j
+  in generateSimplePrototypeDefinition ident basis
 
 
 {-- Generates a synthetic prototype KB. Creates n blocks of 100,000
@@ -72,13 +72,13 @@ generateBaselineChild i j =
   * the base is always P_0 and the value for the property is always the same
   * fixed prototype.
 --}
-generateBlocks :: Int -> Gen [(IRI, PrototypeDefinition IRI)]
+generateBlocks :: Int -> Gen [PrototypeExpression IRI]
 generateBlocks = generateAllBlockLayers 100000
 
-generateAllBlockLayers :: Int -> Int -> Gen [(IRI, PrototypeDefinition IRI)]
+generateAllBlockLayers :: Int -> Int -> Gen [PrototypeExpression IRI]
 generateAllBlockLayers numBlocks layers = vectorOfWithLoopNum layers (++) (generateBlockLayer numBlocks)
 
-generateBlockLayer :: Int -> Int -> Gen [(IRI, PrototypeDefinition IRI)]
+generateBlockLayer :: Int -> Int -> Gen [PrototypeExpression IRI]
 generateBlockLayer numBlocks layer = vectorOfWithLoopNum numBlocks (:) (generateBlockChild layer numBlocks)
 
 -- calls f with the number of the current loop as first argument
@@ -90,16 +90,16 @@ vectorOfWithLoopNum cnt0 conc f =
       | cnt < 0 = pure []
       | otherwise = liftM2 conc (f cnt) (loop (cnt - 1))
 
-generateBlockChild :: Int -> Int -> Int -> Gen (IRI, PrototypeDefinition IRI)
+generateBlockChild :: Int -> Int -> Int -> Gen (PrototypeExpression IRI)
 generateBlockChild layer numBlocks j  = do
-  protodef <- generateBlockPrototypeDefinition layer numBlocks
-  return (generateComplexId layer j, protodef)
+  let ident = generateComplexId layer j
+  generateBlockPrototypeDefinition ident layer numBlocks
 
-generateBlockPrototypeDefinition :: Int -> Int -> Gen (PrototypeDefinition IRI)
-generateBlockPrototypeDefinition i numBlocks = do
+generateBlockPrototypeDefinition :: IRI -> Int -> Int -> Gen (PrototypeExpression IRI)
+generateBlockPrototypeDefinition ident i numBlocks = do
   baseB <- generateBlockBase i numBlocks
   addB <- generateChangeForBlock i numBlocks
-  return $ Proto baseB (Set.singleton addB) Set.empty Set.empty
+  return $ Proto ident baseB (Set.singleton addB) Set.empty Set.empty
 
 generateChangeForBlock :: Int -> Int -> Gen SimpleChangeExpression
 generateChangeForBlock i numBlocks = do
@@ -141,17 +141,20 @@ writeToFile name n x = do
    * (with replacement). The value of each property is chosen randomly among
    * the prototypes.
 --}
-generateIncremental :: Int -> Gen [(IRI, PrototypeDefinition IRI)]
+generateIncremental :: Int -> Gen [PrototypeExpression IRI]
 generateIncremental n = vectorOfWithLoopNum n (:) generateIncrementalChild
 
-generateIncrementalChild :: Int -> Gen (IRI, PrototypeDefinition IRI)
-generateIncrementalChild 0 = return (generateBaseId 0, generateSimplePrototypeDefinition P0)
+generateIncrementalChild :: Int -> Gen (PrototypeExpression IRI)
+generateIncrementalChild 0 =
+  return (generateSimplePrototypeDefinition identifier P0)
+  where identifier = generateBaseId 0
 generateIncrementalChild n = do
   parentId <- choose (0, n-1)
   let cbase = Base $ generateBaseId parentId
   numProps <- choose (0, maxProperties-1)
   cadd <- vectorOf numProps (generateSimpleChange n)
-  return (generateBaseId n, createIncrementalProtoDef cbase $ removeDublicateProps cadd)
+  let ident = generateBaseId n
+  return (createIncrementalProtoDef ident cbase $ removeDublicateProps cadd)
 
 maxProperties :: Int
 maxProperties = 5
@@ -176,15 +179,14 @@ distinctProperties = 10
 getPropertyIriN :: Int -> IRI
 getPropertyIriN n = ID $ "http://www.example.com#knows"++show n
 
-createIncrementalProtoDef :: Bases -> [SimpleChangeExpression] -> PrototypeDefinition IRI
-createIncrementalProtoDef baseI addI = Proto baseI (Set.fromList addI) Set.empty Set.empty
+createIncrementalProtoDef :: IRI -> Bases -> [SimpleChangeExpression] -> PrototypeExpression IRI
+createIncrementalProtoDef ident baseI addI = Proto ident baseI (Set.fromList addI) Set.empty Set.empty
 
-idListToProtos :: IRI -> [Int] -> [(IRI, PrototypeDefinition IRI)]
+idListToProtos :: IRI -> [Int] -> [PrototypeExpression IRI]
 idListToProtos propVal = map (genProto propVal 0)
 
-genProto :: IRI -> Int -> Int -> (IRI, PrototypeDefinition IRI)
+genProto :: IRI -> Int -> Int -> PrototypeExpression IRI
 genProto propVal i j  =
   let prop = Prop (ID "http://www.example.com#knows")
-  in
-  (generateBaseId i,
-  genProtoWithOneProp  (iriToBase $ generateComplexId i j) prop propVal)
+      ident = generateBaseId i
+  in genProtoWithOneProp ident (iriToBase $ generateComplexId i j) prop propVal

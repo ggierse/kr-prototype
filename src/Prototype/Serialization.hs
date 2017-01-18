@@ -55,9 +55,10 @@ protosToKB (Just protos) =
   Map.fromList (map jprotoToKBEntry protos) `debug` ("protosToKB got " ++ show protos)
 protosToKB Nothing = Map.empty `debug` "protosToKB got nothing"
 
-jprotoToKBEntry :: JsonProto -> (Base.IRI, Base.PrototypeDefinition Base.IRI)
+jprotoToKBEntry :: JsonProto -> (Base.IRI, Base.PrototypeExpression Base.IRI)
 jprotoToKBEntry JProto {id=name, base=b, add=adds, rem=rems, remAll=remalls} =
   (name, Base.Proto {
+    Base.idIri = name,
     Base.base = b,
     Base.add = adds,
     Base.remove = rems,

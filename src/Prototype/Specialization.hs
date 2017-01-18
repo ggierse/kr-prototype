@@ -33,9 +33,9 @@ instance PossiblyIRI ComplexValue where
   getIRI _ = Nothing
 
 
-protoDefIriToComplex :: PrototypeDefinition IRI -> PrototypeDefinition ComplexValue
-protoDefIriToComplex Proto {base=b, add=a, remove=r, remAll=r2} =
-  Proto{base=b, add=simpleChangeSetToComplex a, remove=simpleChangeSetToComplex r, remAll=r2}
+protoDefIriToComplex :: PrototypeExpression IRI -> PrototypeExpression ComplexValue
+protoDefIriToComplex Proto {idIri=i, base=b, add=a, remove=r, remAll=r2} =
+  Proto{idIri=i, base=b, add=simpleChangeSetToComplex a, remove=simpleChangeSetToComplex r, remAll=r2}
 
 simpleChangeSetToComplex :: Set.Set SimpleChangeExpression -> Set.Set (ChangeExpression ComplexValue)
 simpleChangeSetToComplex = Set.map simpleChangeToComplex
@@ -51,7 +51,7 @@ getChangeExpression prop values = Change prop (Set.fromList values)
 class Specializable a b where
   isSpecializationOf :: a -> b -> Bool
 
-instance Specializable (PrototypeDefinition ComplexValue) (PrototypeDefinition ComplexValue) where
+instance Specializable (PrototypeExpression ComplexValue) (PrototypeExpression ComplexValue) where
   isSpecializationOf special@Proto {base=_, add=addS, remove=_, remAll=_} general@Proto {base=_, add=addG, remove=_, remAll=_}
     | not $ isFixPoint special = False
     | not $ isFixPoint general = False
