@@ -6,6 +6,7 @@ import qualified Prototype.Basis as Basis
 import TestData
 
 -- import qualified Data.Map.Strict as Map
+import Data.Set (Set)
 import qualified Data.Set as Set
 
 spec :: Spec
@@ -21,7 +22,7 @@ spec = do
       --it "a Constraint is a specialization of another Constraint if the numbers fit" $
       --  Const (Atleast 5) `isSpecializationOf` Const (Atleast 3)
       it "an empty set is a specialization of an empty set" $
-        (Set.empty :: Set.Set Basis.IRI) `isSpecializationOf` (Set.empty :: Set.Set Basis.IRI)
+        (Set.empty :: Set Basis.IRI) `isSpecializationOf` (Set.empty :: Set Basis.IRI)
       it "if only constraints are used the definition for iris does not hinder the implementation" $ -- TODO: this test is to much dependant on the implementation
         getIris (Set.singleton (Const (Atleast 5))) `isSpecializationOf` getIris (Set.singleton (Const (Atleast 3)))
       it "a set of constraints is a specialization of a constraint" $

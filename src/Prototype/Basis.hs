@@ -15,37 +15,39 @@
 
 module Prototype.Basis where
 
+import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
+import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.List as List
 import GHC.Generics
 
 data IRI = ID String deriving (Show, Eq, Ord, Generic)
 data Property = Prop IRI deriving (Show, Eq, Ord, Generic)
-type PropertyMap propValueType = Map.Map Property (Set.Set propValueType)
-data Bases = Base IRI | P0 deriving (Show, Eq, Generic)
+type PropertyMap propValueType = Map Property (Set propValueType)
+data Bases = Base IRI | P0 deriving (Show, Eq, Ord, Generic)
 
-data ChangeExpression propValueType = Change Property (Set.Set propValueType) deriving (Show, Eq, Ord, Generic)
+data ChangeExpression propValueType = Change Property (Set propValueType) deriving (Show, Eq, Ord, Generic)
 type SimpleChangeExpression = ChangeExpression IRI
 
 {--
 data PrototypeDefinition propValueType = Proto {
   base :: Bases,
-  add :: Set.Set (ChangeExpression propValueType),
-  remove :: Set.Set (ChangeExpression propValueType),
-  remAll :: Set.Set Property} deriving (Show, Eq)
+  add :: Set (ChangeExpression propValueType),
+  remove :: Set (ChangeExpression propValueType),
+  remAll :: Set Property} deriving (Show, Eq)
   --}
 
 data PrototypeExpression propValueType = Proto {
   idIri :: IRI,
   base :: Bases,
-  add :: Set.Set (ChangeExpression propValueType),
-  remove :: Set.Set (ChangeExpression propValueType),
-  remAll :: Set.Set Property} deriving (Show, Eq)
+  add :: Set (ChangeExpression propValueType),
+  remove :: Set (ChangeExpression propValueType),
+  remAll :: Set Property} deriving (Show, Eq, Ord)
 
 data Prototype propValueType = PT {name :: IRI, properties :: PropertyMap propValueType} deriving (Show, Eq)
 
-type KnowledgeBase propValueType = Map.Map IRI (PrototypeExpression propValueType)
+type KnowledgeBase propValueType = Map IRI (PrototypeExpression propValueType)
 showPretty :: (Show a) => KnowledgeBase a -> String
 showPretty = Map.foldrWithKey foldMapEntryToStr ""
 
@@ -92,10 +94,10 @@ prototypeToFixpoint :: (Ord a) => Prototype a -> PrototypeExpression a
 prototypeToFixpoint PT {name=iri, properties=props} =
   Proto{idIri=iri, base=P0, add=propertyMapToChangeExpressions props, remove=Set.empty, remAll=Set.empty}
 
-propertyMapToChangeExpressions :: (Ord a) => PropertyMap a -> Set.Set (ChangeExpression a)
+propertyMapToChangeExpressions :: (Ord a) => PropertyMap a -> Set (ChangeExpression a)
 propertyMapToChangeExpressions = Map.foldlWithKey foldPropertyValuesToChangeSet Set.empty
 
-foldPropertyValuesToChangeSet :: (Ord a) => Set.Set (ChangeExpression a) -> Property -> Set.Set a -> Set.Set (ChangeExpression a)
+foldPropertyValuesToChangeSet :: (Ord a) => Set (ChangeExpression a) -> Property -> Set a -> Set (ChangeExpression a)
 foldPropertyValuesToChangeSet changeSet propName iris =
   Set.insert (Change propName iris) changeSet
 
@@ -109,10 +111,10 @@ applyPrototypeExpression
   Proto{base=_, add=add1, remove=rem1, remAll=rem2} PT{name=iri, properties=plist} =
     PT{name=iri, properties=addProperties (removeProperties (removeAllProps plist rem2) rem1) add1}
 
-removeAllProps :: (Ord a) => PropertyMap a -> Set.Set Property -> PropertyMap a
+removeAllProps :: (Ord a) => PropertyMap a -> Set Property -> PropertyMap a
 removeAllProps propMap propSet = Map.filterWithKey (\ k _ -> k `Set.notMember` propSet) propMap
 
-removeProperties :: (Ord a) => PropertyMap a-> Set.Set (ChangeExpression a) -> PropertyMap a
+removeProperties :: (Ord a) => PropertyMap a-> Set (ChangeExpression a) -> PropertyMap a
 removeProperties = Set.foldl removeProperty
 
 removeProperty :: (Ord a) => PropertyMap a -> ChangeExpression a -> PropertyMap a
@@ -123,12 +125,12 @@ removeIfPropertyExists :: (Ord a) => PropertyMap a -> ChangeExpression a -> Prop
 removeIfPropertyExists propMap (Change prop iris) =
   Map.mapWithKey (\k v -> removeValuesIfPropertyEqual (k,v) (prop, iris) ) propMap
 
-removeValuesIfPropertyEqual :: (Ord a) => (Property, Set.Set a) -> (Property, Set.Set a) -> Set.Set a
+removeValuesIfPropertyEqual :: (Ord a) => (Property, Set a) -> (Property, Set a) -> Set a
 removeValuesIfPropertyEqual (pBase, irisBase) (pRemove,irisRemove)
   | pBase == pRemove = irisBase Set.\\ irisRemove
   | otherwise = irisBase
 
-addProperties :: (Ord a) => PropertyMap a -> Set.Set (ChangeExpression a) -> PropertyMap a
+addProperties :: (Ord a) => PropertyMap a -> Set (ChangeExpression a) -> PropertyMap a
 addProperties = Set.foldl addProperty
 
 addProperty :: (Ord a) => PropertyMap a -> ChangeExpression a -> PropertyMap a

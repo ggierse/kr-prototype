@@ -6,7 +6,7 @@ module Prototype.Serialization where
 import Prelude hiding (id, rem)
 import qualified Prototype.Basis as Base
 import Data.Aeson
-import qualified Data.Set as Set
+import Data.Set (Set)
 import qualified Data.Map as Map
 import GHC.Generics
 import Debug.Trace
@@ -16,9 +16,9 @@ import qualified Data.ByteString.Lazy as B
 data JsonProto = JProto {
   id :: Base.IRI,
   base :: Base.Bases,
-  add :: Set.Set (Base.ChangeExpression Base.IRI),
-  rem :: Set.Set (Base.ChangeExpression Base.IRI),
-  remAll :: Set.Set Base.Property
+  add :: Set (Base.ChangeExpression Base.IRI),
+  rem :: Set (Base.ChangeExpression Base.IRI),
+  remAll :: Set Base.Property
 } deriving (Generic, Show)
 
 instance ToJSON JsonProto where

@@ -2,7 +2,9 @@ module TestData where
 
 import Prototype.Basis
 import qualified Prototype.Specialization as Special
+import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.Map (Map)
 import qualified Data.Map as Map
 
 test :: IRI
@@ -38,11 +40,11 @@ car = ID "test:car"
 
 numWheels :: Property
 numWheels = Prop (ID "test:numWheels")
-twoSet :: Set.Set IRI
+twoSet :: Set IRI
 twoSet = Set.fromList [ID "2"]
-fourSet :: Set.Set IRI
+fourSet :: Set IRI
 fourSet = Set.fromList [ID "4"]
-twoFourSet :: Set.Set IRI
+twoFourSet :: Set IRI
 twoFourSet = Set.fromList [ID "2", ID "4"]
 
 changeWheelsToFour :: SimpleChangeExpression
@@ -72,15 +74,15 @@ testKBFixed :: KnowledgeBase IRI
 testKBFixed = generateKBfromPrototypeExps [vehicleProto, bikeFixpoint, carFixpoint]
 
 
-mapTwo :: Map.Map Property (Set.Set IRI)
+mapTwo :: Map Property (Set IRI)
 mapTwo = Map.fromList [(numWheels, Set.fromList [ID "4", ID "2"])]
-mapOne :: Map.Map Property (Set.Set IRI)
+mapOne :: Map Property (Set IRI)
 mapOne = Map.fromList [(numWheels, Set.fromList [ID "4"])]
 
 
-mapTwoProperties :: Map.Map Property (Set.Set IRI)
+mapTwoProperties :: Map Property (Set IRI)
 mapTwoProperties = Map.fromList [(numWheels, twoFourSet), (hasName, Set.fromList [myName, test])]
-mapTwoPropertiesOneEach :: Map.Map Property (Set.Set IRI)
+mapTwoPropertiesOneEach :: Map Property (Set IRI)
 mapTwoPropertiesOneEach = Map.fromList [(numWheels, fourSet), (hasName, Set.fromList [test])]
 
 
@@ -199,6 +201,6 @@ parentProto = Proto {idIri=parent, base=P0, add=Set.singleton childLeast2Constra
 
 
 {--
-familyKB :: Map.Map IRI (PrototypeExpression Special.ComplexValue)
+familyKB :: Map IRI (PrototypeExpression Special.ComplexValue)
 familyKB = Map.fromList [(parent, parentProto), (frank, frankProto), (jan, janProto), (tad,tadProto)]
 --}
