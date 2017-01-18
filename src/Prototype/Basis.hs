@@ -67,13 +67,17 @@ isFixPoint _ = False
 computeAllFixpoints :: (Ord a) => KnowledgeBase a -> KnowledgeBase a
 computeAllFixpoints kb = Map.mapWithKey (\ key _ -> computeFixpoint kb key) kb
 
+computeAllFixpointsAsPrototypes :: (Ord a) => KnowledgeBase a -> [Prototype a]
+computeAllFixpointsAsPrototypes kb = map (computeFixpointAsPrototype kb) (Map.keys kb)
 
 computeFixpoint :: (Ord a) => KnowledgeBase a -> IRI -> PrototypeDefinition a
-computeFixpoint kbMap iri =
+computeFixpoint kbMap iri = prototypeToFixpoint $ computeFixpointAsPrototype kbMap iri
+
+computeFixpointAsPrototype :: (Ord a) => KnowledgeBase a -> IRI -> Prototype a
+computeFixpointAsPrototype kbMap iri =
   let original = kbMap Map.! iri
       branch = getBranchToP0 kbMap original
-      prototype = branchToPrototype iri branch
-  in prototypeToFixpoint prototype
+  in branchToPrototype iri branch
 
 prototypeToFixpoint :: (Ord a) => Prototype a -> PrototypeDefinition a
 prototypeToFixpoint PT {name=_iri, properties=props} =
