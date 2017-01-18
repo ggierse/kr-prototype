@@ -20,6 +20,7 @@ import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.List as List
+import qualified Data.Either()
 import GHC.Generics
 
 data IRI = ID String deriving (Show, Eq, Ord, Generic)
@@ -150,3 +151,56 @@ getBranchToP0 kbMap proto@Proto{base=parent, add=_, remove=_} =
 
 generateKBfromPrototypeExps :: [PrototypeExpression a] -> KnowledgeBase a
 generateKBfromPrototypeExps protos = Map.fromList $ map (\ p@(Proto ident _ _ _ _) -> (ident, p)) protos
+
+
+checkConsistency :: KnowledgeBase IRI -> Bool
+checkConsistency kb =
+  Map.foldlWithKey isMapKeySameAsProtoID True kb
+  && Map.foldl (isBaseDefined kb) True kb
+  && Map.foldl (\ prev (Proto _ _ adds _ _) -> prev && areChangeValuesDefined adds kb) True kb
+  && case isDAG kb of
+    Left err -> error err
+    Right _ -> True
+  -- do not check whether property value referes to P_0, since not possible by type
+  -- do not check for double definitions in external KB, since no external KBs implemented
+
+
+isDAG :: KnowledgeBase IRI -> Either String (Set IRI)
+isDAG kb =
+  Map.foldl (\ eithergrounded proto ->
+    case eithergrounded of
+      Left err -> Left err
+      Right grounded ->
+        case addToBranch kb grounded proto Set.empty of
+          Left err -> error err
+          Right branch -> Right (Set.union grounded branch)
+  ) (Right Set.empty) kb
+
+addToBranch :: KnowledgeBase IRI -> Set IRI -> PrototypeExpression IRI -> Set IRI -> Either String (Set IRI)
+addToBranch kb grounded proto@(Proto ident base _ _ _) currentBranch
+  | Set.member ident grounded = Right currentBranch
+  | Set.member ident currentBranch = Left ("Cycle detected in iheritance tree for: "++ show proto)
+  | otherwise =
+    let nextBranch = Set.insert ident currentBranch
+    in case base of
+      Base parent -> addToBranch kb grounded (kb Map.! parent) nextBranch
+      P0 -> Right nextBranch
+
+isMapKeySameAsProtoID :: Bool -> IRI -> PrototypeExpression t -> Bool
+isMapKeySameAsProtoID prev key (Proto ident _ _ _ _) =
+  prev && key == ident ||
+  error ("The key in the KB ('"++ show key ++"') is not equal to the id of the PrototypeDefinition: '"
+    ++ show ident++"'")
+
+isBaseDefined :: KnowledgeBase IRI -> Bool -> PrototypeExpression IRI -> Bool
+isBaseDefined kb prev (Proto _ (Base b) _ _ _) =
+  prev && ( Map.member b kb || error ("The base '"++show b++"' is not defined"))
+isBaseDefined _kb prev _proto = prev
+
+
+areChangeValuesDefined :: Set (ChangeExpression IRI) -> KnowledgeBase IRI -> Bool
+areChangeValuesDefined set kb = Set.foldl (\ prev c -> prev && areValuesDefined c kb) True set
+
+areValuesDefined :: (Ord a1, Show a1) => ChangeExpression a1 -> Map a1 a -> Bool
+areValuesDefined (Change pName values) kb =
+  Set.foldl (\ prev v -> prev && (Map.member v kb || error ("The value '"++show v++"' of property '"++show pName++"' is not defined."))) True values
