@@ -61,6 +61,7 @@ spec = do
           --  True `shouldBe` False
           --it "the specialized fullfills an existance quantification constraint exposed by the generalization" $
           --  True `shouldBe` False
+          --it "the speciliazied fullfills a one of constraint"
         context "one change expression is not a specialization of another if" $ do
           it "they describe a differently named property" $
             isSpecializationOf changeNameMyName changeWheelsMyName `shouldBe` False
