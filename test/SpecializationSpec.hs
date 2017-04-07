@@ -31,8 +31,8 @@ spec = do
         context "one change expression is a specialization of another if" $ do
           it "they are equal" $
             isSpecializationOf changeNameMyName changeNameMyName `shouldBe` True
-          it "the specialized is a subset of the generalization" $
-            isSpecializationOf changeWheelsToTwo changeWheelsTwoFour `shouldBe` True
+          it "the specialized is a superset of the generalization" $
+            isSpecializationOf changeWheelsTwoFour changeWheelsToTwo `shouldBe` True
           context "the specialized fullfills a number constraint exposed by the generalization" $ do
             it "at least constraint" $
               (threeChildren `isSpecializationOf` childLeast2Constraint) `shouldBe` True
