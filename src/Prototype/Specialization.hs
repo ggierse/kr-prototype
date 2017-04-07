@@ -71,14 +71,14 @@ instance Specializable (ChangeExpression ComplexValue) (ChangeExpression Complex
   isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
     | propS /= propG = False --`debug` "not the same property"
     | general == special = True --`debug` "exactly the same change set"
-    | propSetS `Set.isSubsetOf` propSetG = True --`debug` "subset"
+    | propSetG `Set.isSubsetOf` propSetS = True --`debug` "subset"
     | propSetS `isSpecializationOf` propSetG = True --`debug` "specialization"
     | otherwise = False --`debug` ("otherwise case, propSetS: " ++ show propSetS ++ " propSetG: " ++ show propSetG)
 
 instance Specializable (Set.Set ComplexValue) (Set.Set ComplexValue) where
   isSpecializationOf sSet gSet =
-    sSetisSpecialOfEachgSet && getIris sSet `isSpecializationOf` getIris gSet
-      where sSetisSpecialOfEachgSet = foldSpecialization sSet (getConstraints gSet)
+    sSetIsSpecialOfEachgSet && getIris sSet `isSpecializationOf` getIris gSet
+      where sSetIsSpecialOfEachgSet = foldSpecialization sSet (getConstraints gSet)
 
 instance Specializable (Set.Set IRI) (Set.Set IRI) where
   isSpecializationOf sSet gSet = gSet `Set.isSubsetOf` sSet
@@ -107,7 +107,7 @@ instance Specializable SimpleChangeExpression SimpleChangeExpression where
   isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
     | propS /= propG = False
     | general == special = True
-    | propSetS `Set.isSubsetOf` propSetG = True
+    | propSetG `Set.isSubsetOf` propSetS = True
     | otherwise = False
 
 
