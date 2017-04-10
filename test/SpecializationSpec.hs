@@ -4,6 +4,7 @@ import Test.Hspec
 import qualified Prototype.Basis as Basis
 
 import TestData
+import ComposedPrototypesData as CData
 
 -- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
@@ -11,6 +12,9 @@ import qualified Data.Set as Set
 
 spec :: Spec
 spec = do
+    describe "composed prototypes basics" $ do
+      it "properties of a composed prototype are the set of prototypes that results from looking up the values of proto:hasProperty" $
+        properties fkb genProto `shouldBe` Set.fromList [CData.childLeast2Constraint, namesAllFromConstraint]
     describe "iris and constraints" $ do
       it "a set of iris is a specialization of an atleast constraint" $
         Set.fromList [jan, susan] `isSpecializationOf` Atleast 1 `shouldBe` True
@@ -35,7 +39,7 @@ spec = do
             isSpecializationOf changeWheelsTwoFour changeWheelsToTwo `shouldBe` True
           context "the specialized fullfills a number constraint exposed by the generalization" $ do
             it "at least constraint" $
-              (threeChildren `isSpecializationOf` childLeast2Constraint) `shouldBe` True
+              (threeChildren `isSpecializationOf` TestData.childLeast2Constraint) `shouldBe` True
             it "at most constraint" $
               (oneChild `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
             it "exactly constraint" $
@@ -49,7 +53,7 @@ spec = do
               `shouldBe` True
             context "combined constraints and instances" $ do
               it "atleast constraint alone should make it specialization" $
-                (mixedAtLeast3Iri1 `isSpecializationOf` childLeast2Constraint) `shouldBe` True
+                (mixedAtLeast3Iri1 `isSpecializationOf` TestData.childLeast2Constraint) `shouldBe` True
               it "atmost is equal and one filler" $
                 (mixedAtMost2Iri1 `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
               it "atmost is equal and maximal fillers" $
@@ -67,7 +71,7 @@ spec = do
             isSpecializationOf changeNameMyName changeWheelsMyName `shouldBe` False
           context "the number constraint is not fullfilled" $ do
             it "at least constraint" $
-               oneChild `isSpecializationOf` childLeast2Constraint `shouldBe` False
+               oneChild `isSpecializationOf` TestData.childLeast2Constraint `shouldBe` False
             it "at most constraint" $
               (threeChildren `isSpecializationOf`  childAtmost2Constraint) `shouldBe` False
             it "exactly constraint" $

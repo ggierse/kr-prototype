@@ -51,6 +51,20 @@ getChangeExpression prop values = Change prop (Set.fromList values)
 class Specializable a b where
   isSpecializationOf :: a -> b -> Bool
 
+
+{--
+Specialization relation
+given prototypes s,g: s isSpecializationOf g if for all prototypes G \in properties(g) it holds that
+there exists a prototype S \in properties(s) such that:
+  G.id = S.id
+  and S isSpecializationOf G.
+--}
+
+properties :: FixpointKnowledgeBase IRI -> Prototype a -> Set.Set (Prototype a)
+properties fkb proto = Set.empty
+
+
+
 instance Specializable (PrototypeExpression ComplexValue) (PrototypeExpression ComplexValue) where
   isSpecializationOf special@Proto {base=_, add=addS, remove=_, remAll=_} general@Proto {base=_, add=addG, remove=_, remAll=_}
     | not $ isFixPoint special = False
