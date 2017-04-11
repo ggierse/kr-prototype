@@ -2,13 +2,25 @@ module Prototype.Specialization where
 
 import Prototype.Basis
 
+import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.List as List
 import Data.Maybe (isJust, fromJust)
 import Debug.Trace
+import Numeric.Interval
 
 data Constraint = Exactly Int | Atleast Int | Atmost Int deriving (Show, Eq, Ord)
 data ComplexValue = Value IRI | Const Constraint deriving (Show, Eq, Ord)
+
+data ConstraintName = AllValuesFrom | SomeValuesFrom | Cardinality deriving (Show, Eq)
+
+data ConstraintInfo =  TypeConst {
+  constType :: ConstraintName,
+  constValues :: Set IRI
+} | CardinalityConst {
+  constType :: ConstraintName,
+  constInterval :: Interval Int
+} deriving (Show, Eq)
 
 type ConstraintView = Maybe Constraint
 
