@@ -1,14 +1,14 @@
 module ComposedPrototypesData where
 
 import Prototype.Basis
+import Prototype.Specialization
 import qualified TestData as Test
 import Data.Set (Set)
 import qualified Data.Set as Set
-import Data.Map (Map)
+--import Data.Map (Map)
 import qualified Data.Map as Map
 
-hasProperty :: Property
-hasProperty = Prop (ID "proto:hasProperty")
+
 
 generateHasProperty :: Set IRI -> PropertyMap IRI
 generateHasProperty  = Map.singleton hasProperty

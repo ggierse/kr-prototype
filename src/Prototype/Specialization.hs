@@ -5,6 +5,7 @@ import Prototype.Basis
 import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.List as List
+import qualified Data.Map as Map
 import Data.Maybe (isJust, fromJust)
 import Debug.Trace
 import Numeric.Interval
@@ -58,7 +59,8 @@ simpleChangeToComplex (Change prop values) = Change prop (Set.map Value values)
 getChangeExpression :: Property -> [ComplexValue] -> ChangeExpression ComplexValue
 getChangeExpression prop values = Change prop (Set.fromList values)
 
-
+hasProperty :: Property
+hasProperty = Prop (ID "proto:hasProperty")
 
 class Specializable a b where
   isSpecializationOf :: a -> b -> Bool
@@ -72,8 +74,8 @@ there exists a prototype S \in properties(s) such that:
   and S isSpecializationOf G.
 --}
 
-properties :: FixpointKnowledgeBase IRI -> Prototype a -> Set.Set (Prototype a)
-properties fkb proto = Set.empty
+properties :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set.Set (Prototype IRI)
+properties fkb proto = Set.map (\ iri -> fkb Map.! iri) (props proto Map.! hasProperty)
 
 
 
