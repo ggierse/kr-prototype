@@ -59,11 +59,29 @@ simpleChangeToComplex (Change prop values) = Change prop (Set.map Value values)
 getChangeExpression :: Property -> [ComplexValue] -> ChangeExpression ComplexValue
 getChangeExpression prop values = Change prop (Set.fromList values)
 
+-- Composed prototypes
 hasProperty :: Property
 hasProperty = Prop (ID "proto:hasProperty")
 
-class Specializable a b where
-  isSpecializationOf :: a -> b -> Bool
+properties :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set (Prototype IRI)
+properties fkb proto = Set.map (\ iri -> fkb Map.! iri) (props proto Map.! hasProperty)
+
+-- Property prototypes
+hasID :: Property
+hasID = Prop (ID "proto:hasID")
+
+hasValue :: Property
+hasValue = Prop (ID "proto:hasValue")
+
+hasTypeConstraint :: Property
+hasTypeConstraint = Prop (ID "proto:hasTypeConstraint")
+
+hasCardinalityConstraint :: Property
+hasCardinalityConstraint = Prop (ID "proto:hasCardinalityConstraint")
+
+val :: Prototype IRI -> Set IRI
+val proto = props proto Map.! hasValue
+
 
 
 {--
@@ -74,9 +92,9 @@ there exists a prototype S \in properties(s) such that:
   and S isSpecializationOf G.
 --}
 
-properties :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set.Set (Prototype IRI)
-properties fkb proto = Set.map (\ iri -> fkb Map.! iri) (props proto Map.! hasProperty)
 
+class Specializable a b where
+  isSpecializationOf :: a -> b -> Bool
 
 
 instance Specializable (PrototypeExpression ComplexValue) (PrototypeExpression ComplexValue) where
