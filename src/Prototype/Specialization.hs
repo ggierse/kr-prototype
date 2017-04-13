@@ -13,7 +13,9 @@ import Numeric.Interval
 data Constraint = Exactly Int | Atleast Int | Atmost Int deriving (Show, Eq, Ord)
 data ComplexValue = Value IRI | Const Constraint deriving (Show, Eq, Ord)
 
-data ConstraintName = AllValuesFrom | SomeValuesFrom | Cardinality deriving (Show, Eq)
+data ConstraintName = AllValuesFrom | SomeValuesFrom | Cardinality deriving (Show, Eq, Ord)
+
+
 
 data ConstraintInfo =  TypeConst {
   constType :: ConstraintName,
@@ -21,7 +23,7 @@ data ConstraintInfo =  TypeConst {
 } | CardinalityConst {
   constType :: ConstraintName,
   constInterval :: Interval Int
-} deriving (Show, Eq)
+} deriving (Show, Eq, Ord)
 
 type ConstraintView = Maybe Constraint
 
@@ -63,8 +65,11 @@ getChangeExpression prop values = Change prop (Set.fromList values)
 hasProperty :: Property
 hasProperty = Prop (ID "proto:hasProperty")
 
+accessProperty :: Prototype IRI -> Property -> Set IRI
+accessProperty proto property = props proto Map.! property
+
 properties :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set (Prototype IRI)
-properties fkb proto = Set.map (\ iri -> fkb Map.! iri) (props proto Map.! hasProperty)
+properties fkb proto = Set.map (\ iri -> fkb Map.! iri) (accessProperty proto hasProperty)
 
 -- Property prototypes
 hasID :: Property
@@ -80,9 +85,50 @@ hasCardinalityConstraint :: Property
 hasCardinalityConstraint = Prop (ID "proto:hasCardinalityConstraint")
 
 val :: Prototype IRI -> Set IRI
-val proto = props proto Map.! hasValue
+val proto = accessProperty proto hasValue
 
+isTypeConstraintPrototype :: Prototype IRI -> Bool
+isTypeConstraintPrototype proto =
+  Set.size (accessProperty proto hasConstraintType) == 0 (&&)
+  not Set.null (accessProperty proto hasConstraintValue)
 
+convertTypeConstProto :: Prototype IRI -> Maybe ConstraintInfo
+convertTypeConstProto proto
+  | defined = Just TypeConst {constType=ctype,  constValues=cvals}
+  | otherwise = Nothing
+  where defined = isTypeConstraintPrototype proto
+        ctype = convertIriToConstName $ accessProperty proto hasConstraintType
+        cvals = accessProperty proto hasConstraintValue
+
+consts :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo
+consts fkb proto = Set.empty
+
+-- Type/Cardinality Constraint Prototypes
+hasConstraintValue :: Property
+hasConstraintValue = Prop $ ID "proto:hasConstraintValue"
+
+hasConstraintType :: Property
+hasConstraintType = Prop $ ID "proto:hasConstraintType"
+
+lower :: Property
+lower = Prop $ ID "proto:lower"
+
+upper :: Property
+upper = Prop $ ID "proto:upper"
+
+infty :: IRI
+infty = ID "proto:infty"
+
+allValuesFrom :: IRI
+allValuesFrom = ID "proto:allValuesFrom"
+
+someValuesFrom :: IRI
+someValuesFrom = ID "proto:someValuesFrom"
+
+convertIriToConstName :: IRI -> Maybe ConstraintName
+convertIriToConstName allValuesFrom = Just AllValuesFrom
+convertIriToConstName someValuesFrom = Just SomeValuesFrom
+convertIriToConstName _ = Nothing
 
 {--
 Specialization relation
