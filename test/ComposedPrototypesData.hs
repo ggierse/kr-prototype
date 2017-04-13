@@ -23,6 +23,18 @@ data PropertyPrototype = PP {
   ,cardinalityConstraints :: Set IRI
 }
 
+data TypeConstraintPrototype = TCP {
+   cId :: IRI
+  ,cValues :: Set IRI
+  ,cType :: IRI
+}
+
+data CardinalityConstraintPrototype = CCP {
+  ccId :: IRI
+  ,cLower :: IRI
+  ,cUpper :: IRI
+}
+
 generatePropertyPrototype :: PropertyPrototype -> Prototype IRI
 generatePropertyPrototype pp =
   PT { name=pId pp
@@ -32,6 +44,18 @@ generatePropertyPrototype pp =
                               ,(hasCardinalityConstraint, cardinalityConstraints pp)
                               ]
 }
+
+generateTypeConstraintPrototype :: TypeConstraintPrototype -> Prototype IRI
+generateTypeConstraintPrototype tcp =
+  PT { name=cId tcp
+     , props=Map.fromList[(hasConstraintType, Set.singleton $ cType tcp)
+                         ,(hasConstraintValue, cValues tcp)]}
+
+generateCardinalityConstraintPrototype :: CardinalityConstraintPrototype -> Prototype IRI
+generateCardinalityConstraintPrototype ccp =
+ PT { name=ccId ccp
+    , props=Map.fromList[(lower, Set.singleton $ cLower ccp)
+                        ,(upper, Set.singleton $ cUpper ccp)]}
 
 prop1 :: IRI
 prop1 = ID "_prop1"
@@ -49,26 +73,37 @@ fromNameSet = ID "_fromNameSet"
 mixed :: IRI
 mixed = ID "_mixed"
 
-childLeast2Constraint :: Prototype IRI
-childLeast2Constraint = generatePropertyPrototype PP {pId=prop1
+childLeast2Property :: Prototype IRI
+childLeast2Property = generatePropertyPrototype PP {pId=prop1
                            ,propName=ID "test:hasChildren"
                            ,values=Set.empty
                            ,typeConstraints=Set.empty
                            ,cardinalityConstraints=Set.singleton least2
                          }
-namesAllFromConstraint :: Prototype IRI
-namesAllFromConstraint = generatePropertyPrototype PP {pId=prop2
+childLeast2Constraint :: Prototype IRI
+childLeast2Constraint = generateCardinalityConstraintPrototype CCP {ccId=least2
+                          ,cLower=ID "2"
+                          ,cUpper=infty}
+
+namesAllFromProperty :: Prototype IRI
+namesAllFromProperty = generatePropertyPrototype PP {pId=prop2
                           ,propName=ID "test:hasName"
                           ,values=Set.empty
                           ,typeConstraints=Set.singleton fromNameSet
                           ,cardinalityConstraints=Set.empty
                         }
+nameSet :: Set IRI
+nameSet = Set.fromList [Test.jan, Test.tad, Test.susan, Test.frank, Test.tamara]
+namesAllFromConstraint :: Prototype IRI
+namesAllFromConstraint = generateTypeConstraintPrototype TCP {cId=fromNameSet
+                            ,cValues=nameSet
+                            ,cType=allValuesFrom}
 
 mixedValues :: Set IRI
 mixedValues = Set.singleton $ ID "test:hans"
 
-mixedConstraint :: Prototype IRI
-mixedConstraint = generatePropertyPrototype PP {pId=prop3
+mixedProperty :: Prototype IRI
+mixedProperty = generatePropertyPrototype PP {pId=prop3
                           ,propName=ID "test:hasSiblings"
                           ,values=mixedValues
                           ,typeConstraints=Set.singleton fromNameSet
@@ -76,11 +111,15 @@ mixedConstraint = generatePropertyPrototype PP {pId=prop3
                         }
 
 
+
 genProto :: Prototype IRI
-genProto = PT {name=Test.parent, props=generateHasProperty $ Set.fromList [prop1, prop2]}
+genProto = PT {name=Test.parent, props=generateHasProperty $ Set.fromList [prop1, prop2, prop3]}
 
 fkb :: FixpointKnowledgeBase IRI
 fkb = Map.fromList [ (Test.parent, genProto)
-                   , (prop1, childLeast2Constraint)
-                   , (prop2, namesAllFromConstraint)
+                   , (prop1, childLeast2Property)
+                   , (prop2, namesAllFromProperty)
+                   , (prop3, mixedProperty)
+                   , (fromNameSet, namesAllFromConstraint)
+                   , (least2, childLeast2Constraint)
                    ]

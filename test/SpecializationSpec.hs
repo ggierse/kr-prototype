@@ -14,9 +14,11 @@ spec :: Spec
 spec = do
     describe "composed prototypes basics" $ do
       it "properties of a composed prototype are the set of prototypes that results from looking up the values of proto:hasProperty" $
-        properties fkb genProto `shouldBe` Set.fromList [CData.childLeast2Constraint, namesAllFromConstraint]
+        properties fkb genProto `shouldBe` Set.fromList [childLeast2Property, namesAllFromProperty, mixedProperty]
       it "val of a composed prototype looks up the values of the property proto:hasValue" $
-        val mixedConstraint `shouldBe` mixedValues
+        val mixedProperty `shouldBe` mixedValues
+      it "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $
+        consts mixedProperty `shouldBe` Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}]
     describe "iris and constraints" $ do
       it "a set of iris is a specialization of an atleast constraint" $
         Set.fromList [jan, susan] `isSpecializationOf` Atleast 1 `shouldBe` True
