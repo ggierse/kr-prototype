@@ -8,7 +8,9 @@ import qualified Data.List as List
 import qualified Data.Map as Map
 import Data.Maybe (isJust, fromJust, mapMaybe, fromMaybe)
 import Debug.Trace
-import Numeric.Interval
+import Data.IntegerInterval
+--import qualified Data.IntegerInterval as Interval
+--import Data.ExtendedReal (Extended)
 
 data Constraint = Exactly Int | Atleast Int | Atmost Int deriving (Show, Eq, Ord)
 data ComplexValue = Value IRI | Const Constraint deriving (Show, Eq, Ord)
@@ -22,8 +24,25 @@ data ConstraintInfo =  TypeConst {
   constValues :: Set IRI
 } | CardinalityConst {
   constType :: ConstraintName,
-  constInterval :: Interval Int
+  constInterval :: IntegerInterval
 } deriving (Show, Eq, Ord)
+
+-- TODO is ordering like this ok? does this interfere with how things
+-- are converted to/from lists? does anything get lost if it is equal?
+{--instance Ord ConstraintInfo where
+  TypeConst _ _ `compare` CardinalityConst _ _ = GT
+  CardinalityConst _ _ `compare` TypeConst _ _ = LT
+  --TypeConst name1 _ `compare` TypeConst name2 _ = name1 `compare` name2
+  --CardinalityConst name1 _ `compare` CardinalityConst name2 _ = name1 `compare` name2
+  a `compare` b = constType a `compare` constType b
+--}
+
+instance Ord IntegerInterval where
+  a `compare` b
+    | a == b = EQ
+    | a <! b = LT
+    | a >! b = GT
+
 
 type ConstraintView = Maybe Constraint
 

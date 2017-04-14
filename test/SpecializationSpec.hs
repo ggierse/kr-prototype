@@ -9,6 +9,8 @@ import ComposedPrototypesData as CData
 -- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.IntegerInterval
+
 
 spec :: Spec
 spec = do
@@ -28,8 +30,17 @@ spec = do
         isTypeConstraintPrototype namesAllFromConstraint `shouldBe` True
       it "isTypeConstraintPrototype is false for a property prototype" $
         isTypeConstraintPrototype namesAllFromProperty `shouldBe` False
-      it "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $
-        consts fkb mixedProperty `shouldBe` Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}]
+      describe "ordering from ConstraintInfo works" $ do
+        it "inserting things with same type is ok" $
+          Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}, TypeConst {constType=AllValuesFrom, constValues=Set.empty}] `shouldBe` Set.empty
+      describe "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $ do
+        it "single constraint with allValuesFrom" $
+          consts fkb mixedProperty `shouldBe` Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}]
+        it "single constraint with someValuesFrom" $
+          consts fkb someProperty `shouldBe` Set.fromList [TypeConst {constType=SomeValuesFrom, constValues=nameSet}]
+        it "single constraint with cardinality [2,infinity]" $
+          consts fkb childLeast2Property `shouldBe`
+            Set.fromList [CardinalityConst {constType=Cardinality, constInterval=interval (Finite 2, True) (PosInf, False)}]
     describe "iris and constraints" $ do
       it "a set of iris is a specialization of an atleast constraint" $
         Set.fromList [jan, susan] `isSpecializationOf` Atleast 1 `shouldBe` True

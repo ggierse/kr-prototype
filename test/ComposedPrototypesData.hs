@@ -66,6 +66,9 @@ prop2 = ID "_prop2"
 prop3 :: IRI
 prop3 = ID "_prop3"
 
+prop4 :: IRI
+prop4 = ID "_prop4"
+
 least2 :: IRI
 least2 = ID "_least2card"
 fromNameSet :: IRI
@@ -110,6 +113,23 @@ mixedProperty = generatePropertyPrototype PP {pId=prop3
                           ,cardinalityConstraints=Set.empty
                         }
 
+someProperty :: Prototype IRI
+someProperty = generatePropertyPrototype PP {pId=prop4
+                          ,propName=ID "test:hasSiblings"
+                          ,values=Set.empty
+                          ,typeConstraints=Set.singleton someBlank
+                          ,cardinalityConstraints=Set.empty
+                          }
+
+someBlank :: IRI
+someBlank = ID "_someBlank"
+
+someConstraint :: Prototype IRI
+someConstraint = generateTypeConstraintPrototype TCP {cId=someBlank
+                  ,cValues=nameSet
+                  ,cType=someValuesFrom
+                }
+
 
 
 genProto :: Prototype IRI
@@ -122,4 +142,6 @@ fkb = Map.fromList [ (Test.parent, genProto)
                    , (prop3, mixedProperty)
                    , (fromNameSet, namesAllFromConstraint)
                    , (least2, childLeast2Constraint)
+                   , (prop4, someProperty)
+                   , (someBlank, someConstraint)
                    ]
