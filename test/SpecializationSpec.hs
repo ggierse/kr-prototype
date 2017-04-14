@@ -24,6 +24,10 @@ spec = do
           convertIriToConstName someValuesFrom `shouldBe` Just SomeValuesFrom
         it "another iri" $
           convertIriToConstName jan `shouldBe` Nothing
+      it "isTypeConstraintPrototype is true for a valid type constraint" $
+        isTypeConstraintPrototype namesAllFromConstraint `shouldBe` True
+      it "isTypeConstraintPrototype is false for a property prototype" $
+        isTypeConstraintPrototype namesAllFromProperty `shouldBe` False
       it "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $
         consts mixedProperty `shouldBe` Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}]
     describe "iris and constraints" $ do

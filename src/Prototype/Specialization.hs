@@ -6,7 +6,7 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.List as List
 import qualified Data.Map as Map
-import Data.Maybe (isJust, fromJust)
+import Data.Maybe (isJust, fromJust, mapMaybe, fromMaybe)
 import Debug.Trace
 import Numeric.Interval
 
@@ -66,7 +66,8 @@ hasProperty :: Property
 hasProperty = Prop (ID "proto:hasProperty")
 
 accessProperty :: Prototype IRI -> Property -> Set IRI
-accessProperty proto property = props proto Map.! property
+accessProperty proto property = fromMaybe Set.empty value
+  where value = Map.lookup property $ props proto
 
 properties :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set (Prototype IRI)
 properties fkb proto = Set.map (\ iri -> fkb Map.! iri) (accessProperty proto hasProperty)
@@ -89,8 +90,10 @@ val proto = accessProperty proto hasValue
 
 isTypeConstraintPrototype :: Prototype IRI -> Bool
 isTypeConstraintPrototype proto =
-  Set.size (accessProperty proto hasConstraintType) == 0 (&&)
-  not Set.null (accessProperty proto hasConstraintValue)
+  (&&) (Set.size (accessProperty proto hasConstraintType) == 1)
+       ( (&&) (not $ Set.null (accessProperty proto hasConstraintValue))
+             (isJust $ convertIriToConstName $ Set.elemAt 0 $ accessProperty proto hasConstraintType))
+
 
 convertTypeConstProto :: Prototype IRI -> Maybe ConstraintInfo
 convertTypeConstProto proto
