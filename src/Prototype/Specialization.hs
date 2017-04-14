@@ -126,9 +126,10 @@ someValuesFrom :: IRI
 someValuesFrom = ID "proto:someValuesFrom"
 
 convertIriToConstName :: IRI -> Maybe ConstraintName
-convertIriToConstName allValuesFrom = Just AllValuesFrom
-convertIriToConstName someValuesFrom = Just SomeValuesFrom
-convertIriToConstName _ = Nothing
+convertIriToConstName iri
+  | iri == allValuesFrom = Just AllValuesFrom
+  | iri == someValuesFrom = Just SomeValuesFrom
+  | otherwise = Nothing
 
 {--
 Specialization relation

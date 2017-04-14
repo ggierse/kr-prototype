@@ -17,6 +17,13 @@ spec = do
         properties fkb genProto `shouldBe` Set.fromList [childLeast2Property, namesAllFromProperty, mixedProperty]
       it "val of a composed prototype looks up the values of the property proto:hasValue" $
         val mixedProperty `shouldBe` mixedValues
+      describe "constraint conversion from iri works" $ do
+        it "allValuesFrom" $
+          convertIriToConstName allValuesFrom `shouldBe` Just AllValuesFrom
+        it "someValuesFrom" $
+          convertIriToConstName someValuesFrom `shouldBe` Just SomeValuesFrom
+        it "another iri" $
+          convertIriToConstName jan `shouldBe` Nothing
       it "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $
         consts mixedProperty `shouldBe` Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}]
     describe "iris and constraints" $ do
