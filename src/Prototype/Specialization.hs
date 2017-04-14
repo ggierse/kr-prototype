@@ -100,11 +100,16 @@ convertTypeConstProto proto
   | defined = Just TypeConst {constType=ctype,  constValues=cvals}
   | otherwise = Nothing
   where defined = isTypeConstraintPrototype proto
-        ctype = convertIriToConstName $ accessProperty proto hasConstraintType
+        ctype = fromJust $ convertIriToConstName $ Set.elemAt 0 $ accessProperty proto hasConstraintType
         cvals = accessProperty proto hasConstraintValue
 
+
 consts :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo
-consts fkb proto = Set.empty
+consts fkb proto = Set.fromList $ mapMaybe convertTypeConstProto cTypeProtos
+  where typeConstProtos = accessProperty proto hasTypeConstraint
+        cardinalityConstProtos = accessProperty proto hasCardinalityConstraint
+        cTypeProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) typeConstProtos
+        cCardProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) cardinalityConstProtos
 
 -- Type/Cardinality Constraint Prototypes
 hasConstraintValue :: Property

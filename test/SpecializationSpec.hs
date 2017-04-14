@@ -29,7 +29,7 @@ spec = do
       it "isTypeConstraintPrototype is false for a property prototype" $
         isTypeConstraintPrototype namesAllFromProperty `shouldBe` False
       it "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $
-        consts mixedProperty `shouldBe` Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}]
+        consts fkb mixedProperty `shouldBe` Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}]
     describe "iris and constraints" $ do
       it "a set of iris is a specialization of an atleast constraint" $
         Set.fromList [jan, susan] `isSpecializationOf` Atleast 1 `shouldBe` True
