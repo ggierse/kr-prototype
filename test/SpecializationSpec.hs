@@ -9,7 +9,8 @@ import ComposedPrototypesData as CData
 -- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
-
+import Data.IntegerInterval
+import Control.Exception
 
 spec :: Spec
 spec = do
@@ -59,7 +60,13 @@ spec = do
             isCardConstraintPrototype upNotIntConst `shouldBe` False
           it "true if upper val proto:infty" $
             isCardConstraintPrototype upInftyConst `shouldBe` True
-
+        describe "parseInterval" $ do
+          it "parseInterval converts two number iris to an integer interval" $
+            parseInterval (Basis.ID "2") (Basis.ID "5") `shouldBe` Finite 2  <=..<= Finite 5
+          it "parseInterval can handle proto:infty" $
+            parseInterval (Basis.ID "10") (Basis.ID "proto:infty") `shouldBe` Finite 10  <=..< PosInf
+          it "parseInterval throws error on faulty values" $
+            evaluate (parseInterval (Basis.ID "not correct") (Basis.ID "5")) `shouldThrow` anyErrorCall
       describe "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $ do
         it "single constraint with allValuesFrom" $
           consts fkb mixedProperty `shouldBe` Set.fromList [generateAllConstraint nameSet]

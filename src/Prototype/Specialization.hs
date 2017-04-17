@@ -8,7 +8,7 @@ import qualified Data.List as List
 import qualified Data.Map as Map
 import Data.Maybe (isJust, fromJust, mapMaybe, fromMaybe)
 import Debug.Trace
-import Data.IntegerInterval
+import Data.IntegerInterval as Interval
 import Text.Read
 --import qualified Data.IntegerInterval as Interval
 --import Data.ExtendedReal (Extended)
@@ -134,7 +134,12 @@ convertCardConstProto proto
   | defined = Just CardinalityConst {constType=Cardinality, constInterval=cardint}
   | otherwise = Nothing
   where defined = isCardConstraintPrototype proto
-        cardint = Data.IntegerInterval.empty
+        cardint = Interval.empty
+
+parseInterval :: IRI -> IRI -> IntegerInterval
+parseInterval l u = interval (Finite low, True) up
+  where low = fromJust $ convertIriToInteger l
+        up = fromJust $ convertIriToExtendedInteger u
 
 isCardConstraintPrototype :: Prototype IRI -> Bool
 isCardConstraintPrototype proto =
@@ -148,11 +153,11 @@ isCardConstraintPrototype proto =
 convertIriToInteger :: IRI -> Maybe Integer
 convertIriToInteger (ID str) = readMaybe str
 
-convertIriToExtendedInteger :: IRI -> Maybe (Extended Integer)
+convertIriToExtendedInteger :: IRI -> Maybe (Extended Integer, Bool)
 convertIriToExtendedInteger iri@(ID str)
-  | iri == infty = Just PosInf
+  | iri == infty = Just (PosInf, False)
   | otherwise = case readMaybe str of
-      Just int -> Just (Finite int)
+      Just int -> Just (Finite int, True)
       Nothing -> Nothing
 
 -- Type/Cardinality Constraint Prototypes
