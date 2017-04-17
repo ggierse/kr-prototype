@@ -134,7 +134,10 @@ convertCardConstProto proto
   | defined = Just CardinalityConst {constType=Cardinality, constInterval=cardint}
   | otherwise = Nothing
   where defined = isCardConstraintPrototype proto
-        cardint = Interval.empty
+        cardint = parseInterval low up
+        low = Set.elemAt 0 $ accessProperty proto lower
+        up = Set.elemAt 0 $ accessProperty proto upper
+
 
 parseInterval :: IRI -> IRI -> IntegerInterval
 parseInterval l u = interval (Finite low, True) up

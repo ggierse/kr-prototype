@@ -67,6 +67,13 @@ spec = do
             parseInterval (Basis.ID "10") (Basis.ID "proto:infty") `shouldBe` Finite 10  <=..< PosInf
           it "parseInterval throws error on faulty values" $
             evaluate (parseInterval (Basis.ID "not correct") (Basis.ID "5")) `shouldThrow` anyErrorCall
+        describe "convertCardConstProto" $ do
+          it "convert example [2, infty) constraint correctly" $
+            convertCardConstProto CData.childLeast2Constraint `shouldBe` Just (generateCardConstraintLower 2)
+          it "converts example [3,5] constraint correctly" $
+            convertCardConstProto cardBothDefConstraint `shouldBe` Just (generateCardConstraint 3 5)
+          it "returns nothing for faulty constraint prototype" $
+            convertCardConstProto noLowerConst `shouldBe` Nothing
       describe "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $ do
         it "single constraint with allValuesFrom" $
           consts fkb mixedProperty `shouldBe` Set.fromList [generateAllConstraint nameSet]
