@@ -38,10 +38,8 @@ data ConstraintInfo =  TypeConst {
 --}
 
 instance Ord IntegerInterval where
-  a `compare` b
-    | a == b = EQ
-    | a <! b = LT
-    | a >! b = GT
+  a `compare` b = (lowerBound a, upperBound a) `compare` (lowerBound b, upperBound b)
+
 
 
 type ConstraintView = Maybe Constraint
