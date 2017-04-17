@@ -128,6 +128,9 @@ consts fkb proto = Set.fromList $ mapMaybe convertTypeConstProto cTypeProtos
         cTypeProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) typeConstProtos
         cCardProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) cardinalityConstProtos
 
+convertIriToInteger :: IRI -> Maybe Integer
+convertIriToInteger (ID str) = Just $ read str
+
 -- Type/Cardinality Constraint Prototypes
 hasConstraintValue :: Property
 hasConstraintValue = Prop $ ID "proto:hasConstraintValue"
