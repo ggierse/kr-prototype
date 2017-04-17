@@ -60,23 +60,28 @@ generateCardinalityConstraintPrototype ccp =
 
 
 generateAllConstraint :: Set IRI -> ConstraintInfo
-generateAllConstraint vals = TypeConst {constType=AllValuesFrom, constValues=vals}
+generateAllConstraint vals =
+  TypeConst {constType=AllValuesFrom, constValues=vals}
 
 generateSomeConstraint :: Set IRI -> ConstraintInfo
-generateSomeConstraint vals = TypeConst {constType=SomeValuesFrom, constValues=vals}
+generateSomeConstraint vals =
+  TypeConst {constType=SomeValuesFrom, constValues=vals}
 
 
 generateCardConstraint :: Integer -> Integer -> ConstraintInfo
 generateCardConstraint l u =
-  CardinalityConst {constType=Cardinality, constInterval=interval (Finite l, True) (Finite u, True)}
+  CardinalityConst {constType=Cardinality,
+    constInterval=interval (Finite l, True) (Finite u, True)}
 
 generateCardConstraintLower :: Integer -> ConstraintInfo
 generateCardConstraintLower l =
-  CardinalityConst {constType=Cardinality, constInterval=interval (Finite l, True) (PosInf, False)}
+  CardinalityConst {constType=Cardinality,
+    constInterval=interval (Finite l, True) (PosInf, False)}
 
 generateCardConstraintUpper :: Integer -> ConstraintInfo
 generateCardConstraintUpper u =
-  CardinalityConst {constType=Cardinality, constInterval=interval (Finite 0, True) (Finite u, False)}
+  CardinalityConst {constType=Cardinality,
+    constInterval=interval (Finite 0, True) (Finite u, False)}
 
 prop1 :: IRI
 prop1 = ID "_prop1"
