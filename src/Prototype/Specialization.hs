@@ -122,11 +122,26 @@ convertTypeConstProto proto
 
 
 consts :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo
-consts fkb proto = Set.fromList $ mapMaybe convertTypeConstProto cTypeProtos
+consts fkb proto = Set.fromList $ mapMaybe convertTypeConstProto cTypeProtos ++ mapMaybe convertCardConstProto cCardProtos
   where typeConstProtos = accessProperty proto hasTypeConstraint
         cardinalityConstProtos = accessProperty proto hasCardinalityConstraint
         cTypeProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) typeConstProtos
         cCardProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) cardinalityConstProtos
+
+convertCardConstProto :: Prototype IRI -> Maybe ConstraintInfo
+convertCardConstProto proto
+  | defined = Just CardinalityConst {constType=Cardinality, constInterval=cardint}
+  | otherwise = Nothing
+  where defined = isCardConstraintPrototype proto
+        cardint = Data.IntegerInterval.empty
+
+isCardConstraintPrototype :: Prototype IRI -> Bool
+isCardConstraintPrototype proto =
+  (Set.size lowerVals == 1) &&
+  (Set.size upperVals == 1) &&
+  isJust ( convertIriToInteger $ Set.elemAt 0 lowerVals)
+  where lowerVals = accessProperty proto lower
+        upperVals = accessProperty proto upper
 
 convertIriToInteger :: IRI -> Maybe Integer
 convertIriToInteger (ID str) = Just $ read str
