@@ -106,11 +106,6 @@ hasCardinalityConstraint = Prop (ID "proto:hasCardinalityConstraint")
 val :: Prototype IRI -> Set IRI
 val proto = accessProperty proto hasValue
 
-isTypeConstraintPrototype :: Prototype IRI -> Bool
-isTypeConstraintPrototype proto =
-  (&&) (Set.size (accessProperty proto hasConstraintType) == 1)
-       ( (&&) (not $ Set.null (accessProperty proto hasConstraintValue))
-             (isJust $ convertIriToConstName $ Set.elemAt 0 $ accessProperty proto hasConstraintType))
 
 
 convertTypeConstProto :: Prototype IRI -> Maybe ConstraintInfo
@@ -121,9 +116,17 @@ convertTypeConstProto proto
         ctype = fromJust $ convertIriToConstName $ Set.elemAt 0 $ accessProperty proto hasConstraintType
         cvals = accessProperty proto hasConstraintValue
 
+isTypeConstraintPrototype :: Prototype IRI -> Bool
+isTypeConstraintPrototype proto =
+  (&&) (Set.size (accessProperty proto hasConstraintType) == 1)
+  ( (&&) (not $ Set.null (accessProperty proto hasConstraintValue))
+  (isJust $ convertIriToConstName $ Set.elemAt 0 $ accessProperty proto hasConstraintType))
 
 consts :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo
-consts fkb proto = Set.fromList $ mapMaybe convertTypeConstProto cTypeProtos ++ mapMaybe convertCardConstProto cCardProtos
+consts fkb proto =
+  Set.fromList $
+    mapMaybe convertTypeConstProto cTypeProtos ++
+    mapMaybe convertCardConstProto cCardProtos
   where typeConstProtos = accessProperty proto hasTypeConstraint
         cardinalityConstProtos = accessProperty proto hasCardinalityConstraint
         cTypeProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) typeConstProtos
@@ -138,12 +141,6 @@ convertCardConstProto proto
         low = Set.elemAt 0 $ accessProperty proto lower
         up = Set.elemAt 0 $ accessProperty proto upper
 
-
-parseInterval :: IRI -> IRI -> IntegerInterval
-parseInterval l u = interval (Finite low, True) up
-  where low = fromJust $ convertIriToInteger l
-        up = fromJust $ convertIriToExtendedInteger u
-
 isCardConstraintPrototype :: Prototype IRI -> Bool
 isCardConstraintPrototype proto =
   (Set.size lowerVals == 1) &&
@@ -152,6 +149,11 @@ isCardConstraintPrototype proto =
   isJust ( convertIriToExtendedInteger $ Set.elemAt 0 upperVals)
   where lowerVals = accessProperty proto lower
         upperVals = accessProperty proto upper
+
+parseInterval :: IRI -> IRI -> IntegerInterval
+parseInterval l u = interval (Finite low, True) up
+  where low = fromJust $ convertIriToInteger l
+        up = fromJust $ convertIriToExtendedInteger u
 
 convertIriToInteger :: IRI -> Maybe Integer
 convertIriToInteger (ID str) = readMaybe str
