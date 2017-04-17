@@ -39,6 +39,11 @@ spec = do
         it "inserting same interval does not lead to dublication" $
           Set.fromList [generateCardConstraintLower 2, generateCardConstraintLower 2]
             `shouldBe` Set.fromList [generateCardConstraintLower 2]
+        describe "convert iris to integers" $ do
+          it "convert plain string" $
+            convertIriToInteger (Basis.ID "2") `shouldBe` Just 2
+          it "nothing if not integer" $
+            convertIriToInteger (Basis.ID "someString") `shouldBe` Nothing
       describe "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $ do
         it "single constraint with allValuesFrom" $
           consts fkb mixedProperty `shouldBe` Set.fromList [generateAllConstraint nameSet]
