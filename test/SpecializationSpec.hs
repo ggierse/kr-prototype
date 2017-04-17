@@ -9,7 +9,6 @@ import ComposedPrototypesData as CData
 -- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
-import Data.IntegerInterval
 
 
 spec :: Spec
@@ -32,15 +31,22 @@ spec = do
         isTypeConstraintPrototype namesAllFromProperty `shouldBe` False
       describe "ordering from ConstraintInfo works" $ do
         it "inserting things with same type is ok" $
-          Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}, TypeConst {constType=AllValuesFrom, constValues=Set.empty}] `shouldBe` Set.empty
+          Set.fromList [generateAllConstraint nameSet, generateAllConstraint Set.empty] `shouldBe`
+            Set.fromList [generateAllConstraint nameSet, generateAllConstraint Set.empty]
+        it "inserting different intervals is ok" $
+          Set.fromList [generateCardConstraintLower 2,generateCardConstraint 2 5]
+            `shouldBe` Set.fromList [generateCardConstraintLower 2, generateCardConstraint 2 5]
+        it "inserting same interval does not lead to dublication" $
+          Set.fromList [generateCardConstraintLower 2, generateCardConstraintLower 2]
+            `shouldBe` Set.fromList [generateCardConstraintLower 2]
       describe "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $ do
         it "single constraint with allValuesFrom" $
-          consts fkb mixedProperty `shouldBe` Set.fromList [TypeConst {constType=AllValuesFrom, constValues=nameSet}]
+          consts fkb mixedProperty `shouldBe` Set.fromList [generateAllConstraint nameSet]
         it "single constraint with someValuesFrom" $
-          consts fkb someProperty `shouldBe` Set.fromList [TypeConst {constType=SomeValuesFrom, constValues=nameSet}]
+          consts fkb someProperty `shouldBe` Set.fromList [generateSomeConstraint nameSet]
         it "single constraint with cardinality [2,infinity]" $
           consts fkb childLeast2Property `shouldBe`
-            Set.fromList [CardinalityConst {constType=Cardinality, constInterval=interval (Finite 2, True) (PosInf, False)}]
+            Set.fromList [generateCardConstraintLower 2]
     describe "iris and constraints" $ do
       it "a set of iris is a specialization of an atleast constraint" $
         Set.fromList [jan, susan] `isSpecializationOf` Atleast 1 `shouldBe` True

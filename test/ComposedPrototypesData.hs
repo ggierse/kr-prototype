@@ -7,6 +7,7 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 --import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.IntegerInterval
 
 
 
@@ -56,6 +57,26 @@ generateCardinalityConstraintPrototype ccp =
  PT { name=ccId ccp
     , props=Map.fromList[(lower, Set.singleton $ cLower ccp)
                         ,(upper, Set.singleton $ cUpper ccp)]}
+
+
+generateAllConstraint :: Set IRI -> ConstraintInfo
+generateAllConstraint vals = TypeConst {constType=AllValuesFrom, constValues=vals}
+
+generateSomeConstraint :: Set IRI -> ConstraintInfo
+generateSomeConstraint vals = TypeConst {constType=SomeValuesFrom, constValues=vals}
+
+
+generateCardConstraint :: Integer -> Integer -> ConstraintInfo
+generateCardConstraint l u =
+  CardinalityConst {constType=Cardinality, constInterval=interval (Finite l, True) (Finite u, True)}
+
+generateCardConstraintLower :: Integer -> ConstraintInfo
+generateCardConstraintLower l =
+  CardinalityConst {constType=Cardinality, constInterval=interval (Finite l, True) (PosInf, False)}
+
+generateCardConstraintUpper :: Integer -> ConstraintInfo
+generateCardConstraintUpper u =
+  CardinalityConst {constType=Cardinality, constInterval=interval (Finite 0, True) (Finite u, False)}
 
 prop1 :: IRI
 prop1 = ID "_prop1"
