@@ -9,6 +9,7 @@ import qualified Data.Map as Map
 import Data.Maybe (isJust, fromJust, mapMaybe, fromMaybe)
 import Debug.Trace
 import Data.IntegerInterval
+import Text.Read
 --import qualified Data.IntegerInterval as Interval
 --import Data.ExtendedReal (Extended)
 
@@ -144,7 +145,7 @@ isCardConstraintPrototype proto =
         upperVals = accessProperty proto upper
 
 convertIriToInteger :: IRI -> Maybe Integer
-convertIriToInteger (ID str) = Just $ read str
+convertIriToInteger (ID str) = readMaybe str
 
 -- Type/Cardinality Constraint Prototypes
 hasConstraintValue :: Property
