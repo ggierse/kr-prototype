@@ -114,6 +114,33 @@ childLeast2Constraint = generateCardinalityConstraintPrototype CCP {ccId=least2
                           ,cLower=ID "2"
                           ,cUpper=infty}
 
+cardBothDefConstraint :: Prototype IRI
+cardBothDefConstraint = generateCardinalityConstraintPrototype CCP {ccId=least2
+                          ,cLower=ID "3"
+                          ,cUpper=ID "5"}
+
+noLowerConst :: Prototype IRI
+noLowerConst = PT { name=least2
+    , props=Map.fromList[(upper, Set.singleton (ID "7"))]}
+
+noUpperConst :: Prototype IRI
+noUpperConst = PT { name=least2
+        , props=Map.fromList[(lower, Set.singleton (ID "7"))]}
+lowNotIntConst :: Prototype IRI
+lowNotIntConst = generateCardinalityConstraintPrototype CCP {ccId=least2
+                          ,cLower=ID "not Int"
+                          ,cUpper=ID "5"}
+
+upNotIntConst :: Prototype IRI
+upNotIntConst = generateCardinalityConstraintPrototype CCP {ccId=least2
+                          ,cLower=ID "2"
+                          ,cUpper=ID "not Int"}
+
+upInftyConst :: Prototype IRI
+upInftyConst = generateCardinalityConstraintPrototype CCP {ccId=least2
+                          ,cLower=ID "2"
+                          ,cUpper=ID "proto:infty"}
+                          
 namesAllFromProperty :: Prototype IRI
 namesAllFromProperty = generatePropertyPrototype PP {pId=prop2
                           ,propName=ID "test:hasName"

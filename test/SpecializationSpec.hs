@@ -44,6 +44,22 @@ spec = do
             convertIriToInteger (Basis.ID "2") `shouldBe` Just 2
           it "nothing if not integer" $
             convertIriToInteger (Basis.ID "someString") `shouldBe` Nothing
+        describe "isCardConstraintPrototype" $ do
+          it "true for proto with concrete lower and upper is infty" $
+            isCardConstraintPrototype CData.childLeast2Constraint `shouldBe` True
+          it "true for proto with concrete lower and upper" $
+            isCardConstraintPrototype cardBothDefConstraint `shouldBe` True
+          it "false for proto without lower" $
+            isCardConstraintPrototype noLowerConst `shouldBe` False
+          it "false for proto without upper" $
+            isCardConstraintPrototype noUpperConst `shouldBe` False
+          it "false if lower val is not an integer" $
+            isCardConstraintPrototype lowNotIntConst `shouldBe` False
+          it "false if upper val is not an integer and not proto:infty" $
+            isCardConstraintPrototype upNotIntConst `shouldBe` False
+          it "true if upper val proto:infty" $
+            isCardConstraintPrototype upInftyConst `shouldBe` True
+
       describe "const of a composed prototype looks up the constraint prototypes and transforms them to ConstraintInfo" $ do
         it "single constraint with allValuesFrom" $
           consts fkb mixedProperty `shouldBe` Set.fromList [generateAllConstraint nameSet]

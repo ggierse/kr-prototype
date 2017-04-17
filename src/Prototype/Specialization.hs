@@ -140,12 +140,20 @@ isCardConstraintPrototype :: Prototype IRI -> Bool
 isCardConstraintPrototype proto =
   (Set.size lowerVals == 1) &&
   (Set.size upperVals == 1) &&
-  isJust ( convertIriToInteger $ Set.elemAt 0 lowerVals)
+  isJust ( convertIriToInteger $ Set.elemAt 0 lowerVals) &&
+  isJust ( convertIriToExtendedInteger $ Set.elemAt 0 upperVals)
   where lowerVals = accessProperty proto lower
         upperVals = accessProperty proto upper
 
 convertIriToInteger :: IRI -> Maybe Integer
 convertIriToInteger (ID str) = readMaybe str
+
+convertIriToExtendedInteger :: IRI -> Maybe (Extended Integer)
+convertIriToExtendedInteger iri@(ID str)
+  | iri == infty = Just PosInf
+  | otherwise = case readMaybe str of
+      Just int -> Just (Finite int)
+      Nothing -> Nothing
 
 -- Type/Cardinality Constraint Prototypes
 hasConstraintValue :: Property
