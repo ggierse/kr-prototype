@@ -9,7 +9,8 @@ import Data.Maybe (isJust, fromJust, mapMaybe, fromMaybe)
 import Data.IntegerInterval as Interval
 import Text.Read
 
-data ConstraintName = AllValuesFrom | SomeValuesFrom | Cardinality deriving (Show, Eq, Ord)
+data ConstraintName = AllValuesFrom | SomeValuesFrom | Cardinality
+  deriving (Show, Eq, Ord)
 
 data ConstraintInfo =  TypeConst {
   constType :: ConstraintName,
@@ -20,7 +21,8 @@ data ConstraintInfo =  TypeConst {
 } deriving (Show, Eq, Ord)
 
 instance Ord IntegerInterval where
-  a `compare` b = (lowerBound a, upperBound a) `compare` (lowerBound b, upperBound b)
+  a `compare` b =
+    (lowerBound a, upperBound a) `compare` (lowerBound b, upperBound b)
 
 -- Composed prototypes
 hasProperty :: Property
@@ -30,8 +32,12 @@ accessProperty :: Prototype IRI -> Property -> Set IRI
 accessProperty proto property = fromMaybe Set.empty value
   where value = Map.lookup property $ props proto
 
+accessFirstOfProperty :: Prototype IRI -> Property -> IRI
+accessFirstOfProperty proto property = Set.elemAt 0 $ accessProperty proto property
+
 properties :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set (Prototype IRI)
-properties fkb proto = Set.map (\ iri -> fkb Map.! iri) (accessProperty proto hasProperty)
+properties fkb proto =
+  Set.map (\ iri -> fkb Map.! iri) (accessProperty proto hasProperty)
 
 -- Property prototypes
 hasID :: Property
@@ -56,14 +62,15 @@ convertTypeConstProto proto
   | defined = Just TypeConst {constType=ctype,  constValues=cvals}
   | otherwise = Nothing
   where defined = isTypeConstraintPrototype proto
-        ctype = fromJust $ convertIriToConstName $ Set.elemAt 0 $ accessProperty proto hasConstraintType
+        ctype = fromJust $ convertIriToConstName typeIri
+        typeIri = accessFirstOfProperty proto hasConstraintType
         cvals = accessProperty proto hasConstraintValue
 
 isTypeConstraintPrototype :: Prototype IRI -> Bool
 isTypeConstraintPrototype proto =
   (&&) (Set.size (accessProperty proto hasConstraintType) == 1)
   ( (&&) (not $ Set.null (accessProperty proto hasConstraintValue))
-  (isJust $ convertIriToConstName $ Set.elemAt 0 $ accessProperty proto hasConstraintType))
+  (isJust $ convertIriToConstName $ accessFirstOfProperty proto hasConstraintType))
 
 consts :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo
 consts fkb proto =
@@ -81,8 +88,8 @@ convertCardConstProto proto
   | otherwise = Nothing
   where defined = isCardConstraintPrototype proto
         cardint = parseInterval low up
-        low = Set.elemAt 0 $ accessProperty proto lower
-        up = Set.elemAt 0 $ accessProperty proto upper
+        low = accessFirstOfProperty proto lower
+        up = accessFirstOfProperty proto upper
 
 isCardConstraintPrototype :: Prototype IRI -> Bool
 isCardConstraintPrototype proto =
