@@ -1,9 +1,10 @@
 module SpecializationSpec (spec) where
-import Prototype.Specialization
+import Prototype.SpecializationOld
 import Test.Hspec
 import qualified Prototype.Basis as Basis
 
 import TestData
+import SpecializationOldData
 
 -- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
@@ -35,7 +36,7 @@ spec = do
             isSpecializationOf changeWheelsTwoFour changeWheelsToTwo `shouldBe` True
           context "the specialized fullfills a number constraint exposed by the generalization" $ do
             it "at least constraint" $
-              (threeChildren `isSpecializationOf` TestData.childLeast2Constraint) `shouldBe` True
+              (threeChildren `isSpecializationOf` childLeast2Constraint) `shouldBe` True
             it "at most constraint" $
               (oneChild `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
             it "exactly constraint" $
@@ -49,7 +50,7 @@ spec = do
               `shouldBe` True
             context "combined constraints and instances" $ do
               it "atleast constraint alone should make it specialization" $
-                (mixedAtLeast3Iri1 `isSpecializationOf` TestData.childLeast2Constraint) `shouldBe` True
+                (mixedAtLeast3Iri1 `isSpecializationOf` childLeast2Constraint) `shouldBe` True
               it "atmost is equal and one filler" $
                 (mixedAtMost2Iri1 `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
               it "atmost is equal and maximal fillers" $
@@ -67,7 +68,7 @@ spec = do
             isSpecializationOf changeNameMyName changeWheelsMyName `shouldBe` False
           context "the number constraint is not fullfilled" $ do
             it "at least constraint" $
-               oneChild `isSpecializationOf` TestData.childLeast2Constraint `shouldBe` False
+               oneChild `isSpecializationOf` childLeast2Constraint `shouldBe` False
             it "at most constraint" $
               (threeChildren `isSpecializationOf`  childAtmost2Constraint) `shouldBe` False
             it "exactly constraint" $

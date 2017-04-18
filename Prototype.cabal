@@ -70,6 +70,8 @@ test-suite spec
       Prototype.Basis
       Prototype.Composed
       Prototype.Specialization
+      Prototype.SpecializationOld
       TestData
       Prototype.Serialization
       ComposedPrototypesData
+      SpecializationOldData

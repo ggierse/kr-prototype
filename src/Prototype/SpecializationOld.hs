@@ -1,4 +1,4 @@
-module Prototype.Specialization where
+module Prototype.SpecializationOld where
 
 import Prototype.Basis
 
