@@ -4,12 +4,10 @@ import Test.Hspec
 import qualified Prototype.Basis as Basis
 
 import TestData
-import ComposedPrototypesData as CData
 
 -- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
-import Control.Exception
 
 spec :: Spec
 spec = do
