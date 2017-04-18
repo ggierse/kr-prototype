@@ -35,9 +35,11 @@ accessProperty proto property = fromMaybe Set.empty value
 accessFirstOfProperty :: Prototype IRI -> Property -> IRI
 accessFirstOfProperty proto property = Set.elemAt 0 $ accessProperty proto property
 
+lookupEach :: FixpointKnowledgeBase IRI -> Set IRI -> Set (Prototype IRI)
+lookupEach fkb = Set.map (fkb Map.!)
+
 properties :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set (Prototype IRI)
-properties fkb proto =
-  Set.map (\ iri -> fkb Map.! iri) (accessProperty proto hasProperty)
+properties fkb proto = lookupEach fkb (accessProperty proto hasProperty)
 
 -- Property prototypes
 hasID :: Property
@@ -77,10 +79,10 @@ consts fkb proto =
   Set.fromList $
     mapMaybe convertTypeConstProto cTypeProtos ++
     mapMaybe convertCardConstProto cCardProtos
-  where typeConstProtos = accessProperty proto hasTypeConstraint
+  where cTypeProtos = Set.toList $ lookupEach fkb typeConstProtos
+        cCardProtos = Set.toList $ lookupEach fkb cardinalityConstProtos
+        typeConstProtos = accessProperty proto hasTypeConstraint
         cardinalityConstProtos = accessProperty proto hasCardinalityConstraint
-        cTypeProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) typeConstProtos
-        cCardProtos = Set.toList $ Set.map (\ iri -> fkb Map.! iri) cardinalityConstProtos
 
 convertCardConstProto :: Prototype IRI -> Maybe ConstraintInfo
 convertCardConstProto proto
