@@ -1,7 +1,7 @@
 module ComposedPrototypesData where
 
 import Prototype.Basis
-import Prototype.Specialization
+import Prototype.Composed
 import qualified TestData as Test
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -140,7 +140,7 @@ upInftyConst :: Prototype IRI
 upInftyConst = generateCardinalityConstraintPrototype CCP {ccId=least2
                           ,cLower=ID "2"
                           ,cUpper=ID "proto:infty"}
-                          
+
 namesAllFromProperty :: Prototype IRI
 namesAllFromProperty = generatePropertyPrototype PP {pId=prop2
                           ,propName=ID "test:hasName"

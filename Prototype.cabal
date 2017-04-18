@@ -28,6 +28,7 @@ executable Prototype
       FlexibleContexts
     other-modules:
       Prototype.Basis,
+      Prototype.Composed,
       Prototype.Specialization,
       Prototype.Serialization,
       Prototype.Generator,
@@ -67,6 +68,7 @@ test-suite spec
     ghc-options: -Wall
     other-modules:
       Prototype.Basis
+      Prototype.Composed
       Prototype.Specialization
       TestData
       Prototype.Serialization
