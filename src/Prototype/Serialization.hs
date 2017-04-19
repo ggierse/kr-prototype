@@ -52,8 +52,8 @@ readKB path = protosToKB <$> readEntries path
 
 protosToKB :: Maybe [JsonProto] -> Base.KnowledgeBase Base.IRI
 protosToKB (Just protos) =
-  Map.fromList (map jprotoToKBEntry protos) `debug` ("protosToKB got " ++ show protos)
-protosToKB Nothing = Map.empty `debug` "protosToKB got nothing"
+  Map.fromList (map jprotoToKBEntry protos) --`debug` ("protosToKB got " ++ show protos)
+protosToKB Nothing = Map.empty --`debug` "protosToKB got nothing"
 
 jprotoToKBEntry :: JsonProto -> (Base.IRI, Base.PrototypeExpression Base.IRI)
 jprotoToKBEntry JProto {id=name, base=b, add=adds, rem=rems, remAll=remalls} =
