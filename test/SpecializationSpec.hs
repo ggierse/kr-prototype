@@ -1,10 +1,12 @@
 module SpecializationSpec (spec) where
-import Prototype.SpecializationOld
+import Prototype.Specialization
 import Test.Hspec
 import qualified Prototype.Basis as Basis
 
 import TestData
-import SpecializationOldData
+import ComposedPrototypesData
+import SpecializationData
+--import SpecializationOldData
 
 -- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
@@ -12,40 +14,84 @@ import qualified Data.Set as Set
 
 spec :: Spec
 spec = do
-    describe "iris and constraints" $ do
-      it "a set of iris is a specialization of an atleast constraint" $
-        Set.fromList [jan, susan] `isSpecializationOf` Atleast 1 `shouldBe` True
-      it "a set of iris is a specialization of an atmost constraint" $
-        Set.fromList [jan, susan] `isSpecializationOf` Atmost 5 `shouldBe` True
-      it "a set of iris is a specialization of an exactly constraint" $
-        Set.fromList [jan, susan] `isSpecializationOf` Exactly 2 `shouldBe` True
-    describe "isSpecializationOf" $ do
+    describe "isSatisfied allValuesFrom" $ do
+      it "a set of iris that is equal to the constraint set is satisfied" $
+        isSatisfied threeNamesSet (generateAllConstraint threeNamesSet)
+          `shouldBe` True
+      it "a set of iris that is a subset of the constraint is satisfied" $
+        isSatisfied twoNamesSet (generateAllConstraint threeNamesSet)
+          `shouldBe` True
+      it "a set with one iri not occuring in the constraint is not satisfied" $
+        isSatisfied threeNamesSet (generateAllConstraint twoNamesSet)
+          `shouldBe` False
+    describe "isSatisfied someValuesFrom" $ do
+      it "a set of iris that is equal to the constraint set is satisfied" $
+        isSatisfied threeNamesSet (generateSomeConstraint threeNamesSet)
+          `shouldBe` True
+      it "a set of iris that contains one element of the constraint is satisfied" $
+        isSatisfied (Set.singleton jan) (generateSomeConstraint threeNamesSet)
+          `shouldBe` True
+      it "the set of iris may contain iris not element of the constraint" $
+        isSatisfied  threeNamesSet (generateSomeConstraint (Set.singleton jan))
+          `shouldBe` True
+      it "a set with no iri occuring in the constraint is not satisfied" $
+        isSatisfied (Set.fromList [tamara, frank])
+              (generateSomeConstraint twoNamesSet)
+          `shouldBe` False
+      it "an empty set with non empty constraint is not satisfied" $
+        isSatisfied Set.empty (generateSomeConstraint twoNamesSet)
+          `shouldBe` False
+      it "an empty set with empty constraint is not satisfied" $
+        isSatisfied Set.empty (generateSomeConstraint Set.empty)
+          `shouldBe` False
+    describe "isSatisfied Cardinality Constraints" $ do
+      it "a set of iris satisfies an atleast constraint" $
+        isSatisfied twoNamesSet (generateCardConstraintLower 1)
+          `shouldBe` True
+      it "a set of iris satisfies an atmost constraint" $
+        isSatisfied twoNamesSet (generateCardConstraintUpper 5)
+          `shouldBe` True
+      it "a set of iris satisfies an exactly constraint" $
+        isSatisfied twoNamesSet (generateCardConstraint 2 2)
+          `shouldBe` True
+      it "a larger set of iris that the upper bound does not satisfy" $
+        isSatisfied threeNamesSet (generateCardConstraintUpper 1)
+          `shouldBe` False
+      it "a smaller set of iris that the lower bound does not satisfy" $
+        isSatisfied twoNamesSet (generateCardConstraintLower 3)
+          `shouldBe` False
+    describe "isMatched" $ do
       --it "a Constraint is a specialization of another Constraint if the numbers fit" $
       --  Const (Atleast 5) `isSpecializationOf` Const (Atleast 3)
-      it "an empty set is a specialization of an empty set" $
-        (Set.empty :: Set Basis.IRI) `isSpecializationOf` (Set.empty :: Set Basis.IRI)
-      it "if only constraints are used the definition for iris does not hinder the implementation" $ -- TODO: this test is to much dependant on the implementation
-        getIris (Set.singleton (Const (Atleast 5))) `isSpecializationOf` getIris (Set.singleton (Const (Atleast 3)))
-      it "a set of constraints is a specialization of a constraint" $
-        Set.singleton (Atleast 5)  `isSpecializationOf` Atleast 3
-    describe "changeExpressionIsSpecialization" $ do
+      it "matching a cardinality constraint lower bound" $
+        isMatched (Set.singleton (generateCardConstraintLower 5)) (generateCardConstraintLower 3)
+          `shouldBe` True
+      it "matching a cardinality constraint upper bound" $
+        isMatched (Set.singleton (generateCardConstraintUpper 5)) (generateCardConstraintUpper 6)
+          `shouldBe` True
+      it "matching a cardinality constraint bounded both ways" $
+        isMatched (Set.singleton (generateCardConstraint 2 5)) (generateCardConstraint 1 6)
+          `shouldBe` True
+      -- TODO generate more test cases for matching
+      {--
+    describe "isPropertySpecialization" $ do
         context "one change expression is a specialization of another if" $ do
           it "they are equal" $
-            isSpecializationOf changeNameMyName changeNameMyName `shouldBe` True
+            isPropertySpecialization changeNameMyName changeNameMyName `shouldBe` True
           it "the specialized is a superset of the generalization" $
-            isSpecializationOf changeWheelsTwoFour changeWheelsToTwo `shouldBe` True
+            isPropertySpecialization changeWheelsTwoFour changeWheelsToTwo `shouldBe` True
           context "the specialized fullfills a number constraint exposed by the generalization" $ do
             it "at least constraint" $
-              (threeChildren `isSpecializationOf` childLeast2Constraint) `shouldBe` True
+              (threeChildren `isPropertySpecialization` childLeast2Constraint) `shouldBe` True
             it "at most constraint" $
-              (oneChild `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
+              (oneChild `isPropertySpecialization` childAtmost2Constraint) `shouldBe` True
             it "exactly constraint" $
-              (oneChild `isSpecializationOf` childExactly1Constraint) `shouldBe` True
+              (oneChild `isPropertySpecialization` childExactly1Constraint) `shouldBe` True
             it "mixed instances and constraints in the generalization" $
-              (threeChildren `isSpecializationOf` constPlusChild) `shouldBe` True
+              (threeChildren `isPropertySpecialization` constPlusChild) `shouldBe` True
             it "bigger at least" $
               (getChangeExpression hasChildren [Const (Atleast 5)]
-                `isSpecializationOf`
+                `isPropertySpecialization`
                 getChangeExpression hasChildren [Const (Atleast 4)])
               `shouldBe` True
             context "combined constraints and instances" $ do
@@ -77,7 +123,8 @@ spec = do
               (childExactly1Constraint `isSpecializationOf` childExactly2Constraint) `shouldBe` False
 
 
-
+              --}
+              {--
     describe "isSpecialization" $ do
       context "one PrototypeDefinition is a specialization of another if" $ do
         it "all properties of the general are a changeExpressionSpecialization" $
@@ -90,3 +137,4 @@ spec = do
           (protoDefIriToComplex protoUnfixed `isSpecializationOf` protoDefIriToComplex fixpointProto) `shouldBe` False
         it "if the PrototypeDefinition of the general is not a fixpoint" $
           (protoDefIriToComplex fixpointProto `isSpecializationOf` protoDefIriToComplex protoUnfixed) `shouldBe` False
+          --}

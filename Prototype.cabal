@@ -75,3 +75,4 @@ test-suite spec
       Prototype.Serialization
       ComposedPrototypesData
       SpecializationOldData
+      SpecializationData

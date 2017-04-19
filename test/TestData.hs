@@ -116,3 +116,6 @@ tad :: IRI
 tad = ID "family:tad"
 tamara :: IRI
 tamara = ID "family:tamara"
+
+twoNamesSet = Set.fromList [jan, susan]
+threeNamesSet = Set.fromList [jan, susan, tamara]

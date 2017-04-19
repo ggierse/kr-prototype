@@ -1,4 +1,4 @@
-module SpecializationSpec (spec) where
+module SpecializationOldSpec (spec) where
 import Prototype.SpecializationOld
 import Test.Hspec
 import qualified Prototype.Basis as Basis
