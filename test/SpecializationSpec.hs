@@ -61,18 +61,63 @@ spec = do
         isSatisfied twoNamesSet (generateCardConstraintLower 3)
           `shouldBe` False
     describe "isMatched" $ do
-      --it "a Constraint is a specialization of another Constraint if the numbers fit" $
-      --  Const (Atleast 5) `isSpecializationOf` Const (Atleast 3)
       it "matching a cardinality constraint lower bound" $
-        isMatched (Set.singleton (generateCardConstraintLower 5)) (generateCardConstraintLower 3)
+        isMatched (Set.singleton (generateCardConstraintLower 5))
+            (generateCardConstraintLower 3)
           `shouldBe` True
       it "matching a cardinality constraint upper bound" $
-        isMatched (Set.singleton (generateCardConstraintUpper 5)) (generateCardConstraintUpper 6)
+        isMatched (Set.singleton (generateCardConstraintUpper 5))
+            (generateCardConstraintUpper 6)
           `shouldBe` True
       it "matching a cardinality constraint bounded both ways" $
-        isMatched (Set.singleton (generateCardConstraint 2 5)) (generateCardConstraint 1 6)
+        isMatched (Set.singleton (generateCardConstraint 2 5))
+            (generateCardConstraint 1 6)
           `shouldBe` True
-      -- TODO generate more test cases for matching
+      it "matching a AllValuesFrom constraint" $
+        isMatched (Set.singleton $ generateAllConstraint twoNamesSet)
+            (generateAllConstraint threeNamesSet)
+          `shouldBe` True
+      it "matching a SomeValuesFrom constraint" $
+        isMatched (Set.singleton $ generateSomeConstraint twoNamesSet)
+            (generateSomeConstraint threeNamesSet)
+          `shouldBe` True
+      it "not matching a SomeValuesFrom constraint" $
+        isMatched (Set.singleton $ generateSomeConstraint threeNamesSet)
+            (generateSomeConstraint twoNamesSet)
+          `shouldBe` False
+      it "not matching a AllValuesFrom constraint" $
+        isMatched (Set.singleton $ generateSomeConstraint threeNamesSet)
+            (generateSomeConstraint twoNamesSet)
+          `shouldBe` False
+      it "AllValuesFrom matching an empty set as specialization constraint value" $
+        isMatched (Set.singleton $ generateAllConstraint Set.empty)
+            (generateAllConstraint twoNamesSet) `shouldBe` True
+      it "AllValuesFrom matching empty set with empty set" $
+        isMatched (Set.singleton $ generateAllConstraint Set.empty)
+            (generateAllConstraint Set.empty) `shouldBe` True
+      it "AllValuesFrom not matching an empty set as generalization constraint value" $
+        isMatched (Set.singleton $ generateAllConstraint twoNamesSet)
+            (generateAllConstraint Set.empty) `shouldBe` False
+      it "not matching all and some constraint" $
+        isMatched (Set.singleton $ generateAllConstraint twoNamesSet)
+          (generateSomeConstraint twoNamesSet) `shouldBe` False
+      it "not matching some and all constraint" $
+        isMatched (Set.singleton $ generateSomeConstraint twoNamesSet)
+          (generateAllConstraint twoNamesSet) `shouldBe` False
+      it "not matching card and some constraint" $
+        isMatched (Set.singleton $ generateCardConstraint 2 2)
+          (generateSomeConstraint twoNamesSet) `shouldBe` False
+      it "not matching card and all constraint" $
+        isMatched (Set.singleton $ generateCardConstraint 2 2)
+          (generateAllConstraint twoNamesSet) `shouldBe` False
+      it "matching: find one of multiple possibilties" $
+        isMatched (Set.fromList [generateSomeConstraint twoNamesSet
+              , generateCardConstraint 2 5
+              , generateAllConstraint twoNamesSet])
+            (generateCardConstraint 1 6)
+          `shouldBe` True
+  --  describe "accountFor" $ do
+    --  it ""
       {--
     describe "isPropertySpecialization" $ do
         context "one change expression is a specialization of another if" $ do
@@ -103,12 +148,6 @@ spec = do
                 (mixedAtMost2Iri2 `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
 
 
-
-          --it "the specialized fullfills a type restriction constraint" $
-          --  True `shouldBe` False
-          --it "the specialized fullfills an existance quantification constraint exposed by the generalization" $
-          --  True `shouldBe` False
-          --it "the speciliazied fullfills a one of constraint"
         context "one change expression is not a specialization of another if" $ do
           it "they describe a differently named property" $
             isSpecializationOf changeNameMyName changeWheelsMyName `shouldBe` False
