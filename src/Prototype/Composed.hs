@@ -68,6 +68,29 @@ convertTypeConstProto proto
         typeIri = accessFirstOfProperty proto hasConstraintType
         cvals = accessProperty proto hasConstraintValue
 
+convertConstraintInfoToProto :: IRI -> ConstraintInfo -> Prototype IRI
+convertConstraintInfoToProto ident constInfo =
+  case constInfo of
+    TypeConst typeName vals ->
+      PT { name=ident
+        , props=Map.fromList[(hasConstraintType, Set.singleton $ convertConstNameToIri typeName)
+                           ,(hasConstraintValue, vals)]}
+    CardinalityConst _ interval ->
+      PT { name=ident
+        , props=intervalToLowerUperMap interval}
+
+intervalToLowerUperMap :: IntegerInterval -> PropertyMap IRI
+intervalToLowerUperMap interval =
+  Map.fromList[(lower, Set.singleton l)
+              ,(upper, Set.singleton u)]
+  where l = extendedToIri $ lowerBound interval
+        u = extendedToIri $ upperBound interval
+
+extendedToIri :: Show a => Extended a -> IRI
+extendedToIri PosInf = infty
+extendedToIri (Finite v) = ID $ show v
+extendedToIri NegInf = ID "proto:negInfty"
+
 isTypeConstraintPrototype :: Prototype IRI -> Bool
 isTypeConstraintPrototype proto =
   (&&) (Set.size (accessProperty proto hasConstraintType) == 1)
@@ -147,3 +170,9 @@ convertIriToConstName iri
   | iri == allValuesFrom = Just AllValuesFrom
   | iri == someValuesFrom = Just SomeValuesFrom
   | otherwise = Nothing
+
+convertConstNameToIri :: ConstraintName -> IRI
+convertConstNameToIri constName =
+  case constName of
+    AllValuesFrom -> allValuesFrom
+    SomeValuesFrom -> someValuesFrom
