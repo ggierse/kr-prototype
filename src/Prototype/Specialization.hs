@@ -20,18 +20,25 @@ there exists a prototype S \in properties(s) such that:
 
 isSpecializationOf :: FixpointKnowledgeBase IRI -> Prototype IRI -> Prototype IRI -> Bool
 isSpecializationOf fkb special general =
-    forAllGeneralExistsSpecial fkb sprops gprops
+    forall existsSpecial gprops
+    --forAllGeneralExistsSpecial fkb sprops gprops
     where gprops = properties fkb general
           sprops = properties fkb special
+          existsSpecial g = exists (\s -> propertyIdIsEqual s g && isPropertySpecialization fkb s g) sprops
 
+{--
 forAllGeneralExistsSpecial fkb sprops =
-  Set.foldl' (\ prev g -> prev && existsSpecial fkb sprops g) True
+  forall existsSpecial -- Set.foldl' (\ prev g -> prev && existsSpecial g) True
+  where existsSpecial g = exists (\s -> propertyIdIsEqual s g && isPropertySpecialization fkb s g) sprops
+  --}
 
+{--
 existsSpecial fkb sprops g =
   case samePropertyName of
     Nothing -> False
     Just s -> isPropertySpecialization fkb s g
   where samePropertyName = List.find (propertyIdIsEqual g) sprops
+  --}
 
 propertyIdIsEqual :: Prototype IRI -> Prototype IRI -> Bool
 propertyIdIsEqual a b =
@@ -45,26 +52,29 @@ isPropertySpecialization fkb s g
 
 accountFor :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo -> Bool
 accountFor fkb s gConsts
-  | Set.null sConsts = Set.foldl' (\ prev gc -> prev && isSatisfied (val s) gc) True gConsts
-  | otherwise = Set.foldl' (\ prev gc -> prev && isMatched sConsts gc) True gConsts
+  | Set.null sConsts = forall (isSatisfied $ val s) gConsts --Set.foldl' (\ prev gc -> prev && isSatisfied (val s) gc) True gConsts
+  | otherwise = forall (isMatched sConsts) gConsts --Set.foldl' (\ prev gc -> prev && isMatched sConsts gc) True gConsts
   where sConsts = consts fkb s
 
 
-isMatched :: Foldable t1 => t1 ConstraintInfo -> ConstraintInfo -> Bool
-isMatched sConsts gc = isJust $ existsMatching sConsts gc
-
-existsMatching :: Foldable t => t ConstraintInfo -> ConstraintInfo -> Maybe ConstraintInfo
-existsMatching sConsts gc =
+isMatched :: Foldable t => t ConstraintInfo -> ConstraintInfo -> Bool
+isMatched sConsts gc =
   case gc of
     CardinalityConst _ _ ->
-      List.find (\sc -> constType sc == constType gc && constInterval sc `Interval.isSubsetOf` constInterval gc) sConsts
+      exists (\sc -> constType sc == constType gc && constInterval sc `Interval.isSubsetOf` constInterval gc) sConsts
     TypeConst _ _ ->
-      List.find (\sc -> constType sc == constType gc && constValues sc `Set.isSubsetOf` constValues gc) sConsts
+      exists (\sc -> constType sc == constType gc && constValues sc `Set.isSubsetOf` constValues gc) sConsts
 
 
 isSatisfied :: Set IRI -> ConstraintInfo -> Bool
 isSatisfied sVals gc =
   case constType gc of
-    AllValuesFrom -> Set.foldl' (\ prev v -> prev && v `Set.member` constValues gc) True sVals
-    SomeValuesFrom -> isJust $ List.find (\ v -> v `Set.member` constValues gc) sVals
+    AllValuesFrom -> forall (\ v -> v `Set.member` constValues gc) sVals --Set.foldl' (\ prev v -> prev && v `Set.member` constValues gc) True sVals
+    SomeValuesFrom -> exists (\ v -> v `Set.member` constValues gc) sVals --isJust $ List.find (\ v -> v `Set.member` constValues gc) sVals
     Cardinality -> toInteger (Set.size sVals) `Interval.member` constInterval gc
+
+exists :: Foldable t =>  (t1 -> Bool) -> t t1 -> Bool
+exists condition foldable = isJust $ List.find condition foldable
+
+forall :: (b -> Bool) -> Set b -> Bool
+forall condition = Set.foldl' (\ prev v -> prev && condition v) True
