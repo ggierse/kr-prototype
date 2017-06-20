@@ -21,7 +21,6 @@ there exists a prototype S \in properties(s) such that:
 isSpecializationOf :: FixpointKnowledgeBase IRI -> Prototype IRI -> Prototype IRI -> Bool
 isSpecializationOf fkb special general =
     forall existsSpecial gprops
-    --forAllGeneralExistsSpecial fkb sprops gprops
     where gprops = properties fkb general
           sprops = properties fkb special
           existsSpecial g = exists (\s -> propertyIdIsEqual s g && isPropertySpecialization fkb s g) sprops

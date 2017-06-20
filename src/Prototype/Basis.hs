@@ -26,19 +26,15 @@ import Data.Typeable
 import GHC.Generics
 
 
+-- Data Types for Syntax
 data IRI = ID String deriving (Show, Eq, Ord, Generic)
 data Property = Prop IRI deriving (Show, Eq, Ord, Generic)
-type PropertyMap propValueType = Map Property (Set propValueType)
 data Bases = Base IRI | P0 deriving (Show, Eq, Ord, Generic)
 
-data ChangeExpression propValueType = Change Property (Set propValueType) deriving (Show, Eq, Ord, Generic)
+data ChangeExpression propValueType = Change Property (Set propValueType)
+  deriving (Show, Eq, Ord, Generic)
 type SimpleChangeExpression = ChangeExpression IRI
 
-data ConsistencyException = CycleDetected String | KeysInconsistent String |
-                            BaseUndefined String | PropValUndefined String
-                            deriving (Show, Typeable, Eq)
-
-instance Exception ConsistencyException
 
 {--
 data PrototypeDefinition propValueType = Proto {
@@ -55,9 +51,22 @@ data PrototypeExpression propValueType = Proto {
   remove :: Set (ChangeExpression propValueType),
   remAll :: Set Property} deriving (Show, Eq, Ord)
 
-data Prototype propValueType = PT {name :: IRI, props :: PropertyMap propValueType} deriving (Show, Eq, Ord)
-
 type KnowledgeBase propValueType = Map IRI (PrototypeExpression propValueType)
+
+-- Data Types for Fixpoint Knowledge Base / Semantics
+type PropertyMap propValueType = Map Property (Set propValueType)
+data Prototype propValueType = PT {name :: IRI, props :: PropertyMap propValueType}
+  deriving (Show, Eq, Ord)
+type FixpointKnowledgeBase propValueType = Map IRI (Prototype propValueType)
+
+-- Exceptions
+data ConsistencyException = CycleDetected String | KeysInconsistent String |
+                            BaseUndefined String | PropValUndefined String
+                            deriving (Show, Typeable, Eq)
+
+instance Exception ConsistencyException
+
+
 showPretty :: (Show a) => KnowledgeBase a -> String
 showPretty = Map.foldrWithKey foldMapEntryToStr ""
 
@@ -65,7 +74,6 @@ foldMapEntryToStr :: (Show a) => IRI -> a -> String -> String
 foldMapEntryToStr key value prev = prev ++ show key ++ ": " ++ show value ++ "\n"
 
 
-type FixpointKnowledgeBase propValueType = Map IRI (Prototype propValueType)
 
 -- |
 -- Convert IRI to Bases type
