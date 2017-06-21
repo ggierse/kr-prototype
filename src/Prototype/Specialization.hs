@@ -50,6 +50,16 @@ isPropertySpecialization fkb s g
   | otherwise = isPropertyProtoEqual s g
   where gConsts = consts fkb g
 
+isPropertyProtoEqual :: Prototype IRI -> Prototype IRI -> Bool
+isPropertyProtoEqual a b =
+  propsEq a b hasID &&
+  propsEq a b hasValue &&
+  propsEq a b hasTypeConstraint &&
+  propsEq a b hasCardinalityConstraint
+  where getProp proto prop = props proto Map.! prop
+  propsEq p1 p2 prop = getProp p1 prop == getProp p2 prop
+
+
 accountFor :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo -> Bool
 accountFor fkb s gConsts
   | Set.null sConsts = forall (isSatisfied $ val s) gConsts --Set.foldl' (\ prev gc -> prev && isSatisfied (val s) gc) True gConsts
@@ -73,14 +83,6 @@ isSatisfied sVals gc =
     SomeValuesFrom -> exists (\ v -> v `Set.member` constValues gc) sVals --isJust $ List.find (\ v -> v `Set.member` constValues gc) sVals
     Cardinality -> toInteger (Set.size sVals) `Interval.member` constInterval gc
 
-isPropertyProtoEqual :: Prototype IRI -> Prototype IRI -> Bool
-isPropertyProtoEqual a b =
-  propsEq a b hasID &&
-  propsEq a b hasValue &&
-  propsEq a b hasTypeConstraint &&
-  propsEq a b hasCardinalityConstraint
-  where getProp proto prop = props proto Map.! prop
-        propsEq p1 p2 prop = getProp p1 prop == getProp p2 prop
 
 exists :: Foldable t =>  (t1 -> Bool) -> t t1 -> Bool
 exists condition foldable = isJust $ List.find condition foldable
