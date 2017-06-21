@@ -6,6 +6,7 @@ import Prototype.Composed
 import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.List as List
+import qualified Data.Map as Map
 import Debug.Trace
 import Data.Maybe (isJust, fromJust)
 import Data.IntegerInterval as Interval
@@ -46,7 +47,7 @@ propertyIdIsEqual a b =
 isPropertySpecialization :: FixpointKnowledgeBase IRI -> Prototype IRI -> Prototype IRI -> Bool
 isPropertySpecialization fkb s g
   | Set.null gConsts = val g `Set.isSubsetOf` val s && accountFor fkb s gConsts
-  | otherwise = True
+  | otherwise = isPropertyProtoEqual s g
   where gConsts = consts fkb g
 
 accountFor :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo -> Bool
@@ -71,6 +72,15 @@ isSatisfied sVals gc =
     AllValuesFrom -> forall (\ v -> v `Set.member` constValues gc) sVals --Set.foldl' (\ prev v -> prev && v `Set.member` constValues gc) True sVals
     SomeValuesFrom -> exists (\ v -> v `Set.member` constValues gc) sVals --isJust $ List.find (\ v -> v `Set.member` constValues gc) sVals
     Cardinality -> toInteger (Set.size sVals) `Interval.member` constInterval gc
+
+isPropertyProtoEqual :: Prototype IRI -> Prototype IRI -> Bool
+isPropertyProtoEqual a b =
+  propsEq a b hasID &&
+  propsEq a b hasValue &&
+  propsEq a b hasTypeConstraint &&
+  propsEq a b hasCardinalityConstraint
+  where getProp proto prop = props proto Map.! prop
+        propsEq p1 p2 prop = getProp p1 prop == getProp p2 prop
 
 exists :: Foldable t =>  (t1 -> Bool) -> t t1 -> Bool
 exists condition foldable = isJust $ List.find condition foldable

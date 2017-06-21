@@ -10,8 +10,6 @@ import qualified Data.Map as Map
 import TestData
 import ComposedPrototypesData
 
-hotelKB :: FixpointKnowledgeBase IRI
-hotelKB = Map.empty
 
 lodging :: IRI
 lodging = ID "hotel:lodging"
@@ -64,6 +62,29 @@ lodgingRoomProperty =
                               , typeConstraints = Set.empty
                               , cardinalityConstraints = Set.singleton atLeast1}
 
+lodgingRoom2 :: IRI
+lodgingRoom2 = ID "_lodgingRoom2"
+
+lodgingRoomPropertyWithVal :: Prototype IRI
+lodgingRoomPropertyWithVal =
+  generatePropertyPrototype PP {pId = lodgingRoom2
+                              , propName = hasRoomType
+                              , values = Set.singleton suite
+                              , typeConstraints = Set.empty
+                              , cardinalityConstraints = Set.empty}
+
+lodgingRoom3 :: IRI
+lodgingRoom3 = ID "_lodgingRoom3"
+
+lodgingRoomPropertyWithVal2 :: Prototype IRI
+lodgingRoomPropertyWithVal2 =
+  generatePropertyPrototype PP {pId = lodgingRoom3
+                              , propName = hasRoomType
+                              , values = Set.singleton suite
+                              , typeConstraints = Set.empty
+                              , cardinalityConstraints = Set.empty}
+
+
 atLeast1 :: IRI
 atLeast1 = ID "_atLeast1"
 
@@ -72,3 +93,10 @@ atLeast1ConstraintInfo = generateCardConstraintLower 1
 
 atLeast1Constraint :: Prototype IRI
 atLeast1Constraint = convertConstraintInfoToProto atLeast1 atLeast1ConstraintInfo
+
+hotelKB :: FixpointKnowledgeBase IRI
+hotelKB = Map.fromList [(lodgingRoom, lodgingRoomProperty)
+  , (atLeast1, atLeast1Constraint)
+  , (lodgingRoom2, lodgingRoomPropertyWithVal)
+  , (lodgingRoom3, lodgingRoomPropertyWithVal2)
+  ]

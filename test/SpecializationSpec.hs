@@ -118,8 +118,15 @@ spec = do
           `shouldBe` True
   --  describe "accountFor" $ do
     --  it ""
-      {--
     describe "isPropertySpecialization" $ do
+      it "a property is not a specialization of another if sconsts is empty and the values are unequal" $
+        isPropertySpecialization hotelKB lodgingRoomPropertyWithVal lodgingRoomProperty
+          `shouldBe` False
+      it "a property is a specialization of another if sconsts is empty and the values are equal" $
+        isPropertySpecialization hotelKB lodgingRoomPropertyWithVal lodgingRoomPropertyWithVal2
+          `shouldBe` True
+
+      {--
         context "one change expression is a specialization of another if" $ do
           it "they are equal" $
             isPropertySpecialization changeNameMyName changeNameMyName `shouldBe` True
