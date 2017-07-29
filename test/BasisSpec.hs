@@ -87,13 +87,6 @@ spec = do
     describe "consistency check related tests" $ do
       it "isMapKeySameAsProtoID throws error" $
         evaluate (isMapKeySameAsProtoID True car fixpointProto) `shouldThrow` keyException
-        {--do
-          a <- try (return (isMapKeySameAsProtoID True car fixpointProto))
-          case a of
-            Right what -> what `shouldBe` False
-            Left e -> e `shouldBe` KeysInconsistent "test"
-          --a `shouldBe` Left (KeysInconsistent "test") --`shouldThrow` keyException
-          --}
       it "not consistent if kb keys are not equal to proto ids" $
         evaluate ( (checkConsistency (Map.singleton car bikeProto))) `shouldThrow` keyException
 

@@ -35,15 +35,6 @@ data ChangeExpression propValueType = Change Property (Set propValueType)
   deriving (Show, Eq, Ord, Generic)
 type SimpleChangeExpression = ChangeExpression IRI
 
-
-{--
-data PrototypeDefinition propValueType = Proto {
-  base :: Bases,
-  add :: Set (ChangeExpression propValueType),
-  remove :: Set (ChangeExpression propValueType),
-  remAll :: Set Property} deriving (Show, Eq)
-  --}
-
 data PrototypeExpression propValueType = Proto {
   idIri :: IRI,
   base :: Bases,
@@ -73,13 +64,6 @@ showPretty = Map.foldrWithKey foldMapEntryToStr ""
 foldMapEntryToStr :: (Show a) => IRI -> a -> String -> String
 foldMapEntryToStr key value prev = prev ++ show key ++ ": " ++ show value ++ "\n"
 
-
-
--- |
--- Convert IRI to Bases type
---
--- >>> iriToBase (ID "test:test")
--- Base (ID "test:test")
 iriToBase :: IRI -> Bases
 iriToBase = Base
 
@@ -181,8 +165,8 @@ checkConsistency kb =
   && case isDAG kb of
     Left err -> throw (CycleDetected err)
     Right _ -> True
-  -- do not check whether property value referes to P_0, since not possible by type
-  -- do not check for double definitions in external KB, since no external KBs implemented
+  -- cannot check whether property value referes to P_0, since not possible by type
+  -- cannot check for double definitions in external KB, since no external KBs implemented
 
 
 isDAG :: KnowledgeBase IRI -> Either String (Set IRI)

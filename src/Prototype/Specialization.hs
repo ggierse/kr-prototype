@@ -12,8 +12,8 @@ import Data.Maybe (isJust, fromJust)
 import Data.IntegerInterval as Interval
 {--
 Specialization relation
-given prototypes s,g: s isSpecializationOf g if for all prototypes G \in properties(g) it holds that
-there exists a prototype S \in properties(s) such that:
+given prototypes s,g: s isSpecializationOf g if for all prototypes G in properties(g) it holds that
+there exists a prototype S in properties(s) such that:
   G.id = S.id
   and S isSpecializationOf G.
 --}
@@ -25,20 +25,6 @@ isSpecializationOf fkb special general =
     where gprops = properties fkb general
           sprops = properties fkb special
           existsSpecial g = exists (\s -> propertyIdIsEqual s g && isPropertySpecialization fkb s g) sprops
-
-{--
-forAllGeneralExistsSpecial fkb sprops =
-  forall existsSpecial -- Set.foldl' (\ prev g -> prev && existsSpecial g) True
-  where existsSpecial g = exists (\s -> propertyIdIsEqual s g && isPropertySpecialization fkb s g) sprops
-  --}
-
-{--
-existsSpecial fkb sprops g =
-  case samePropertyName of
-    Nothing -> False
-    Just s -> isPropertySpecialization fkb s g
-  where samePropertyName = List.find (propertyIdIsEqual g) sprops
-  --}
 
 propertyIdIsEqual :: Prototype IRI -> Prototype IRI -> Bool
 propertyIdIsEqual a b =
@@ -57,13 +43,13 @@ isPropertyProtoEqual a b =
   propsEq a b hasTypeConstraint &&
   propsEq a b hasCardinalityConstraint
   where getProp proto prop = props proto Map.! prop
-  propsEq p1 p2 prop = getProp p1 prop == getProp p2 prop
+        propsEq p1 p2 prop = getProp p1 prop == getProp p2 prop
 
 
 accountFor :: FixpointKnowledgeBase IRI -> Prototype IRI -> Set ConstraintInfo -> Bool
 accountFor fkb s gConsts
-  | Set.null sConsts = forall (isSatisfied $ val s) gConsts --Set.foldl' (\ prev gc -> prev && isSatisfied (val s) gc) True gConsts
-  | otherwise = forall (isMatched sConsts) gConsts --Set.foldl' (\ prev gc -> prev && isMatched sConsts gc) True gConsts
+  | Set.null sConsts = forall (isSatisfied $ val s) gConsts
+  | otherwise = forall (isMatched sConsts) gConsts
   where sConsts = consts fkb s
 
 
@@ -79,8 +65,8 @@ isMatched sConsts gc =
 isSatisfied :: Set IRI -> ConstraintInfo -> Bool
 isSatisfied sVals gc =
   case constType gc of
-    AllValuesFrom -> forall (\ v -> v `Set.member` constValues gc) sVals --Set.foldl' (\ prev v -> prev && v `Set.member` constValues gc) True sVals
-    SomeValuesFrom -> exists (\ v -> v `Set.member` constValues gc) sVals --isJust $ List.find (\ v -> v `Set.member` constValues gc) sVals
+    AllValuesFrom -> forall (\ v -> v `Set.member` constValues gc) sVals
+    SomeValuesFrom -> exists (\ v -> v `Set.member` constValues gc) sVals
     Cardinality -> toInteger (Set.size sVals) `Interval.member` constInterval gc
 
 
