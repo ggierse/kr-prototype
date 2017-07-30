@@ -7,9 +7,10 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.List as List
 import qualified Data.Map as Map
-import Debug.Trace
 import Data.Maybe (isJust, fromJust)
 import Data.IntegerInterval as Interval
+
+
 {--
 Specialization relation
 given prototypes s,g: s isSpecializationOf g if for all prototypes G in properties(g) it holds that
@@ -32,7 +33,7 @@ propertyIdIsEqual a b =
 
 isPropertySpecialization :: FixpointKnowledgeBase IRI -> Prototype IRI -> Prototype IRI -> Bool
 isPropertySpecialization fkb s g
-  | Set.null gConsts = val g `Set.isSubsetOf` val s && accountFor fkb s gConsts
+  | not (Set.null gConsts) = val g `Set.isSubsetOf` val s && accountFor fkb s gConsts
   | otherwise = isPropertyProtoEqual s g
   where gConsts = consts fkb g
 

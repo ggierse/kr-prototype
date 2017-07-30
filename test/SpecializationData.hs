@@ -17,6 +17,8 @@ hostel :: IRI
 hostel = ID "hotel:hostel"
 hotel :: IRI
 hotel = ID "hotel:hotel"
+hotel2 :: IRI
+hotel2 = ID "hotel:hotel"
 superbHostel :: IRI
 superbHostel = ID "hotel:superbHostel"
 luxuryHotel :: IRI
@@ -94,9 +96,23 @@ atLeast1ConstraintInfo = generateCardConstraintLower 1
 atLeast1Constraint :: Prototype IRI
 atLeast1Constraint = convertConstraintInfoToProto atLeast1 atLeast1ConstraintInfo
 
+lodgingPrototype :: Prototype IRI
+lodgingPrototype = PT {name=lodging, props=generateHasProperty $ Set.fromList [lodgingRoom]}
+
+hotelPrototype :: Prototype IRI
+hotelPrototype = PT {name=hotel, props=generateHasProperty $ Set.fromList [lodgingRoom2]}
+
+hotelPrototype2 :: Prototype IRI
+hotelPrototype2 = PT {name=hotel, props=generateHasProperty $ Set.fromList [lodgingRoom3]}
+
+
+
 hotelKB :: FixpointKnowledgeBase IRI
 hotelKB = Map.fromList [(lodgingRoom, lodgingRoomProperty)
   , (atLeast1, atLeast1Constraint)
   , (lodgingRoom2, lodgingRoomPropertyWithVal)
   , (lodgingRoom3, lodgingRoomPropertyWithVal2)
+  , (lodging, lodgingPrototype)
+  , (hotel2, hotelPrototype2)
+  , (hotel, hotelPrototype)
   ]

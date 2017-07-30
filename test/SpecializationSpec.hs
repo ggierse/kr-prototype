@@ -2,15 +2,15 @@ module SpecializationSpec (spec) where
 import Prototype.Specialization
 import Test.Hspec
 import qualified Prototype.Basis as Basis
+import qualified Prototype.Composed as Composed
 
 import TestData
 import ComposedPrototypesData
 import SpecializationData
---import SpecializationOldData
 
--- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
+
 
 spec :: Spec
 spec = do
@@ -119,13 +119,18 @@ spec = do
   --  describe "accountFor" $ do
     --  it ""
     describe "isPropertySpecialization" $ do
-      it "a property is not a specialization of another if sconsts is empty and the values are unequal" $
+      it "a property is a specialization of another if the constraints are satisfied" $
         isPropertySpecialization hotelKB lodgingRoomPropertyWithVal lodgingRoomProperty
-          `shouldBe` False
+          `shouldBe` True
       it "a property is a specialization of another if sconsts is empty and the values are equal" $
         isPropertySpecialization hotelKB lodgingRoomPropertyWithVal lodgingRoomPropertyWithVal2
           `shouldBe` True
-
+      it "a property is a specialization of another if the values fulfill the constraints" $
+        isPropertySpecialization hotelKB lodgingRoomPropertyWithVal2 lodgingRoomProperty
+          `shouldBe` True
+    describe "isSpecializationOf" $ do
+      it "examples of specialization" $
+        isSpecializationOf hotelKB hotelPrototype lodgingPrototype `shouldBe` True
       {--
         context "one change expression is a specialization of another if" $ do
           it "they are equal" $
