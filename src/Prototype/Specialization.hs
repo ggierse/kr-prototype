@@ -1,3 +1,22 @@
+-----------------------------------------------------------------------------
+--
+-- Module    :  Prototype.Basis
+-- Copyright (C) 2017 Gesche Gierse
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU Lesser General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU Lesser General Public License for more details.
+--
+-- You should have received a copy of the GNU Lesser General Public License
+-- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+--
+-----------------------------------------------------------------------------
+
 module Prototype.Specialization where
 
 import Prototype.Basis
@@ -11,13 +30,13 @@ import Data.Maybe (isJust, fromJust)
 import Data.IntegerInterval as Interval
 
 
-{--
-Specialization relation
-given prototypes s,g: s isSpecializationOf g if for all prototypes G in properties(g) it holds that
-there exists a prototype S in properties(s) such that:
-  G.id = S.id
-  and S isSpecializationOf G.
---}
+-----------------------------------------------------------------------------
+-- Specialization Relation
+-- Given prototypes s,g: s isSpecializationOf g if for all prototypes G in properties(g) it holds that
+-- there exists a prototype S in properties(s) such that:
+--   G.id = S.id
+--   and S isSpecializationOf G.
+------------------------------------------------------------------------------
 
 
 isSpecializationOf :: FixpointKnowledgeBase IRI -> Prototype IRI -> Prototype IRI -> Bool
