@@ -98,12 +98,14 @@ convertConstraintInfoToProto ident constInfo =
       PT { name=ident
         , props=intervalToLowerUperMap interval}
 
+intervalToLowerUperMap :: IntegerInterval -> PropertyMap IRI
 intervalToLowerUperMap interval =
   Map.fromList[(lower, Set.singleton l)
               ,(upper, Set.singleton u)]
   where l = extendedToIri $ lowerBound interval
         u = extendedToIri $ upperBound interval
 
+extendedToIri :: Show a => Extended a -> IRI
 extendedToIri PosInf = infty
 extendedToIri (Finite v) = ID $ show v
 extendedToIri NegInf = ID "proto:"
@@ -182,10 +184,14 @@ allValuesFrom = ID "proto:allValuesFrom"
 someValuesFrom :: IRI
 someValuesFrom = ID "proto:someValuesFrom"
 
+cardinality :: IRI
+cardinality = ID "proto:cardinality"
+
 convertIriToConstName :: IRI -> Maybe ConstraintName
 convertIriToConstName iri
   | iri == allValuesFrom = Just AllValuesFrom
   | iri == someValuesFrom = Just SomeValuesFrom
+  | iri == cardinality = Just Cardinality
   | otherwise = Nothing
 
 convertConstNameToIri :: ConstraintName -> IRI
@@ -193,3 +199,4 @@ convertConstNameToIri constName =
   case constName of
     AllValuesFrom -> allValuesFrom
     SomeValuesFrom -> someValuesFrom
+    Cardinality -> cardinality

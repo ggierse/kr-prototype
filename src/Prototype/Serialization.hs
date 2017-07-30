@@ -28,7 +28,6 @@ import Data.Aeson
 import Data.Set (Set)
 import qualified Data.Map as Map
 import GHC.Generics
-import Debug.Trace
 
 import qualified Data.ByteString.Lazy as B
 
@@ -71,8 +70,8 @@ readKB path = protosToKB <$> readEntries path
 
 protosToKB :: Maybe [JsonProto] -> Base.KnowledgeBase Base.IRI
 protosToKB (Just protos) =
-  Map.fromList (map jprotoToKBEntry protos) --`debug` ("protosToKB got " ++ show protos)
-protosToKB Nothing = Map.empty --`debug` "protosToKB got nothing"
+  Map.fromList (map jprotoToKBEntry protos)
+protosToKB Nothing = Map.empty
 
 jprotoToKBEntry :: JsonProto -> (Base.IRI, Base.PrototypeExpression Base.IRI)
 jprotoToKBEntry JProto {id=name, base=b, add=adds, rem=rems, remAll=remalls} =
@@ -89,6 +88,3 @@ readEntries path = decode <$> getJSON path
 
 getJSON :: FilePath -> IO B.ByteString
 getJSON = B.readFile
-
-debug :: c -> String -> c
-debug = flip trace

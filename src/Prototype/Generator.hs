@@ -21,8 +21,6 @@ module Prototype.Generator where
 
 import Prototype.Basis
 
---mport System.Random
-
 import qualified Data.Bits as Bits
 import qualified Data.Set as Set
 
@@ -132,25 +130,6 @@ generateBlockBase layer numBlocks = fmap Base (genIriFromAboveBlock layer numBlo
 genIriFromAboveBlock :: Int -> Int -> Gen IRI
 genIriFromAboveBlock 0 _ = return (generateComplexId 0 0)
 genIriFromAboveBlock i numBlocks = fmap (generateComplexId (i-1)) (choose (0, numBlocks))
-
--- use "sample'" to obtain sample, unfortunatly makes it IO
-
-{--
-example_generator = create_block_file ("blockgentest", 10, block)
-
-
-create_block_file (fname, count, gens) =
-  do
-    test_blocks <- sample' gens
-    writeToFile fname (show test_blocks)
-    where
-      mkDataDef gen_name = liftM BlockLayerBaseDef gen_name
-
-writeToFile name n x = do
-  h <- openFile (name ++ "_" ++ n) WriteMode
-  hPutStrLn h $ show x
-  hClose h
-  --}
 
 {--
    * Generates a synthetic prototype KB. The KB is constructed by adding

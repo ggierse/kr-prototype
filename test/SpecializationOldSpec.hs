@@ -25,7 +25,6 @@ import qualified Prototype.Basis as Basis
 import TestData
 import SpecializationOldData
 
--- import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -39,8 +38,6 @@ spec = do
       it "a set of iris is a specialization of an exactly constraint" $
         Set.fromList [jan, susan] `isSpecializationOf` Exactly 2 `shouldBe` True
     describe "isSpecializationOf" $ do
-      --it "a Constraint is a specialization of another Constraint if the numbers fit" $
-      --  Const (Atleast 5) `isSpecializationOf` Const (Atleast 3)
       it "an empty set is a specialization of an empty set" $
         (Set.empty :: Set Basis.IRI) `isSpecializationOf` (Set.empty :: Set Basis.IRI)
       it "if only constraints are used the definition for iris does not hinder the implementation" $ -- TODO: this test is to much dependant on the implementation
@@ -75,13 +72,6 @@ spec = do
               it "atmost is equal and maximal fillers" $
                 (mixedAtMost2Iri2 `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
 
-
-
-          --it "the specialized fullfills a type restriction constraint" $
-          --  True `shouldBe` False
-          --it "the specialized fullfills an existance quantification constraint exposed by the generalization" $
-          --  True `shouldBe` False
-          --it "the speciliazied fullfills a one of constraint"
         context "one change expression is not a specialization of another if" $ do
           it "they describe a differently named property" $
             isSpecializationOf changeNameMyName changeWheelsMyName `shouldBe` False

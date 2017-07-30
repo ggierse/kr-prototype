@@ -135,8 +135,7 @@ spec = do
               , generateAllConstraint twoNamesSet])
             (generateCardConstraint 1 6)
           `shouldBe` True
-  --  describe "accountFor" $ do
-    --  it ""
+
     describe "isPropertySpecialization" $ do
       it "a property is a specialization of another if the constraints are satisfied" $
         isPropertySpecialization hotelKB lodgingRoomPropertyWithVal lodgingRoomProperty
@@ -147,64 +146,6 @@ spec = do
       it "a property is a specialization of another if the values fulfill the constraints" $
         isPropertySpecialization hotelKB lodgingRoomPropertyWithVal2 lodgingRoomProperty
           `shouldBe` True
-    describe "isSpecializationOf" $ do
-      it "examples of specialization" $
+    describe "isSpecializationOf" $
+      it "example of specialization" $
         isSpecializationOf hotelKB hotelPrototype lodgingPrototype `shouldBe` True
-      {--
-        context "one change expression is a specialization of another if" $ do
-          it "they are equal" $
-            isPropertySpecialization changeNameMyName changeNameMyName `shouldBe` True
-          it "the specialized is a superset of the generalization" $
-            isPropertySpecialization changeWheelsTwoFour changeWheelsToTwo `shouldBe` True
-          context "the specialized fullfills a number constraint exposed by the generalization" $ do
-            it "at least constraint" $
-              (threeChildren `isPropertySpecialization` childLeast2Constraint) `shouldBe` True
-            it "at most constraint" $
-              (oneChild `isPropertySpecialization` childAtmost2Constraint) `shouldBe` True
-            it "exactly constraint" $
-              (oneChild `isPropertySpecialization` childExactly1Constraint) `shouldBe` True
-            it "mixed instances and constraints in the generalization" $
-              (threeChildren `isPropertySpecialization` constPlusChild) `shouldBe` True
-            it "bigger at least" $
-              (getChangeExpression hasChildren [Const (Atleast 5)]
-                `isPropertySpecialization`
-                getChangeExpression hasChildren [Const (Atleast 4)])
-              `shouldBe` True
-            context "combined constraints and instances" $ do
-              it "atleast constraint alone should make it specialization" $
-                (mixedAtLeast3Iri1 `isSpecializationOf` childLeast2Constraint) `shouldBe` True
-              it "atmost is equal and one filler" $
-                (mixedAtMost2Iri1 `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
-              it "atmost is equal and maximal fillers" $
-                (mixedAtMost2Iri2 `isSpecializationOf` childAtmost2Constraint) `shouldBe` True
-
-
-        context "one change expression is not a specialization of another if" $ do
-          it "they describe a differently named property" $
-            isSpecializationOf changeNameMyName changeWheelsMyName `shouldBe` False
-          context "the number constraint is not fullfilled" $ do
-            it "at least constraint" $
-               oneChild `isSpecializationOf` childLeast2Constraint `shouldBe` False
-            it "at most constraint" $
-              (threeChildren `isSpecializationOf`  childAtmost2Constraint) `shouldBe` False
-            it "exactly constraint" $
-              (threeChildren `isSpecializationOf`  childExactly1Constraint) `shouldBe` False
-            it "exactly constraint cannot be specialized by constraint" $
-              (childExactly1Constraint `isSpecializationOf` childExactly2Constraint) `shouldBe` False
-
-
-              --}
-              {--
-    describe "isSpecialization" $ do
-      context "one PrototypeDefinition is a specialization of another if" $ do
-        it "all properties of the general are a changeExpressionSpecialization" $
-          (carWithComputerProto `isSpecializationOf` computerProtoG) `shouldBe` True
-        it "a PrototypeDefinition can be a specialization of multiple generals" $
-          ((carWithComputerProto `isSpecializationOf` computerProtoG) &&
-          (carWithComputerProto `isSpecializationOf` carProtoG)) `shouldBe` True
-      context "one PrototypeDefintion is not a specialization of another if" $ do
-        it "if the PrototypeDefinition of the special is not a fixpoint" $
-          (protoDefIriToComplex protoUnfixed `isSpecializationOf` protoDefIriToComplex fixpointProto) `shouldBe` False
-        it "if the PrototypeDefinition of the general is not a fixpoint" $
-          (protoDefIriToComplex fixpointProto `isSpecializationOf` protoDefIriToComplex protoUnfixed) `shouldBe` False
-          --}

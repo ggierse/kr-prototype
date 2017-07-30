@@ -86,7 +86,7 @@ instance Specializable (PrototypeExpression ComplexValue) (PrototypeExpression C
   isSpecializationOf special@Proto {base=_, add=addS, remove=_, remAll=_} general@Proto {base=_, add=addG, remove=_, remAll=_}
     | not $ isFixPoint special = False
     | not $ isFixPoint general = False
-    | otherwise = foldSpecialization addS addG--Set.foldr (\ g prev -> prev && (addS `isSpecializationOf` g)) True addG
+    | otherwise = foldSpecialization addS addG
 
 foldSpecialization :: (Specializable a b) => a -> Set b -> Bool
 foldSpecialization special = Set.foldl' (\ prev g -> prev && (special `isSpecializationOf` g)) True
@@ -100,11 +100,11 @@ instance Specializable (Set (ChangeExpression ComplexValue)) (ChangeExpression C
 
 instance Specializable (ChangeExpression ComplexValue) (ChangeExpression ComplexValue) where
   isSpecializationOf special@(Change propS propSetS) general@(Change propG propSetG)
-    | propS /= propG = False --`debug` "not the same property"
-    | general == special = True --`debug` "exactly the same change set"
-    | propSetG `Set.isSubsetOf` propSetS = True --`debug` "subset"
-    | propSetS `isSpecializationOf` propSetG = True --`debug` "specialization"
-    | otherwise = False --`debug` ("otherwise case, propSetS: " ++ show propSetS ++ " propSetG: " ++ show propSetG)
+    | propS /= propG = False
+    | general == special = True
+    | propSetG `Set.isSubsetOf` propSetS = True
+    | propSetS `isSpecializationOf` propSetG = True
+    | otherwise = False
 
 instance Specializable (Set ComplexValue) (Set ComplexValue) where
   isSpecializationOf sSet gSet =
@@ -142,20 +142,6 @@ instance Specializable SimpleChangeExpression SimpleChangeExpression where
     | otherwise = False
 
 
-{--instance Specializable ComplexValue ComplexValue where
-  isSpecializationOf (Value s) (Value g) = s == g
-  isSpecializationOf (Const s) (Const g) = s `isSpecializationOf` g
-  isSpecializationOf _ _ = False
-
---}
-
-
-
-
-
-
-
-
 getIris :: Set ComplexValue -> Set IRI
 getIris complexSet =
   let maybeIris = Set.map getIRI complexSet
@@ -167,9 +153,3 @@ getConstraints complexSet =
   let maybeConstraint = Set.map getConstraint complexSet
       justConstraint = Set.filter isJust maybeConstraint
   in Set.map fromJust justConstraint
-
-
-debug :: c -> String -> c
-debug = flip trace
-
--- TODO: check consistency with constraints (constraints are fullfilled in one change expression/within a prototype)
